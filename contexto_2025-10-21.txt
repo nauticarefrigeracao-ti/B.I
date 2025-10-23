@@ -1,0 +1,21 @@
+Resumo do dia 2025-10-21
+
+Acoes realizadas hoje:
+- Ajustei o app Streamlit (`app_streamlit.py`) para que o campo 'Prejuízo' represente exatamente o valor `total_brl` (com sinal), alinhando com o painel do Mercado Livre.
+- Removi a exibição do campo interno `_valor_pendente` como 'Prejuízo pendente' no UI e no export padrão. Agora esses valores aparecem apenas num expander debug no detalhe do pedido.
+- Corrigi o export XLSX para usar `pd.ExcelWriter` com context manager (resolvendo o erro com `OpenpyxlWriter.save`).
+- Adicionei formatação e mapeamento de colunas em Português e saneei os nomes exibidos no app.
+
+Ponto onde paramos:
+- Código atualizado e salvo em `app_streamlit.py`.
+- Ainda preciso subir uma instância nova do Streamlit e confirmar a exportação XLSX em execução real se voce autorizar.
+
+Proximos passos sugeridos:
+1) Reiniciar o Streamlit local (vou encerrar processos relacionados e iniciar um server novo) e validar visualmente.
+2) Rodar um export XLSX pela UI para garantir que o arquivo `reports/export_*.xlsx` seja gerado sem erros.
+3) Gerar relatório por dia com agregados ML vs DB para identificar discrepancias remanescentes.
+4) Se necessário, solicitar ao Mercado Livre um export por pedido para reconciliacao 1:1.
+
+Notas tecnicas:
+- Banco: `ml_devolucoes.db` (tabelas `orders`, `order_items`, `reviews`, `actions`).
+- Arquivos: `consolidado.csv`, `reports/` (onde os exports serão gravados).

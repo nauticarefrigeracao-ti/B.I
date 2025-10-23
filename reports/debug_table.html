@@ -1,0 +1,1267 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"><script src="https://code.jquery.com/jquery-3.5.1.js"></script><script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <style>
+        .neg { color: #c62828; font-weight: 600; } .rev { color: #2e7d32; font-weight: 700; }
+        /* Sticky first column */
+        #debug_tbl th:first-child, #debug_tbl td:first-child {
+            position: sticky;
+            left: 0;
+            background: #ffffff;
+            z-index: 3;
+            min-width: 60px;
+            text-align: left;
+        }
+        #debug_tbl th:first-child { z-index:4; }
+        /* Buttons */
+        .copy-btn { background:#1976d2;color:#fff;border:none;padding:4px 6px;border-radius:4px;cursor:pointer;margin-right:6px; }
+        .copy-btn:hover { background:#125ea6; }
+        .open-link { color:#1976d2; text-decoration: none; font-weight:600; }
+        .open-link:hover { text-decoration: underline; }
+        /* table aesthetics */
+        #debug_tbl { border-collapse: collapse; }
+        #debug_tbl th, #debug_tbl td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+        </style>
+        <div style="max-height:520px; overflow:auto"><table border="1" class="dataframe display" id="debug_tbl">
+  <thead>
+    <tr style="text-align: right;">
+      <th>#</th>
+      <th>order_id</th>
+      <th>data_venda</th>
+      <th>total_brl</th>
+      <th>_valor_passivel_extorno</th>
+      <th>_valor_pendente</th>
+      <th>dinheiro_liberado</th>
+      <th>sku</th>
+      <th>preco_unitario</th>
+      <th>unidades</th>
+      <th>resultado</th>
+      <th>mes_faturamento</th>
+      <th>prejuizo_real_signed</th>
+      <th>prejuizo_real</th>
+      <th>prejuizo_pendente_calc</th>
+      <th>prejuizo_pendente_signed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009105891821" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009105891821" title="Copiar e instruir para abrir detalhe">1</a></td>
+      <td>2000009105891821</td>
+      <td>2025-09-04 23:12:00</td>
+      <td>-257.85</td>
+      <td>1457.85</td>
+      <td>1457.85</td>
+      <td>0</td>
+      <td>GB0728</td>
+      <td>1200.00</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-257.85</td>
+      <td>257.85</td>
+      <td>257.85</td>
+      <td>-257.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009115195257" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009115195257" title="Copiar e instruir para abrir detalhe">2</a></td>
+      <td>2000009115195257</td>
+      <td>2025-09-05 18:58:00</td>
+      <td>-220.35</td>
+      <td>3054.01</td>
+      <td>3054.01</td>
+      <td>0</td>
+      <td>NR4169</td>
+      <td>2833.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-220.35</td>
+      <td>220.35</td>
+      <td>220.35</td>
+      <td>-220.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009297870269" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009297870269" title="Copiar e instruir para abrir detalhe">3</a></td>
+      <td>2000009297870269</td>
+      <td>2025-09-21 19:35:00</td>
+      <td>-197.85</td>
+      <td>1111.42</td>
+      <td>1111.42</td>
+      <td>0</td>
+      <td>NR5484-2</td>
+      <td>913.57</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-197.85</td>
+      <td>197.85</td>
+      <td>197.85</td>
+      <td>-197.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013055195008" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013055195008" title="Copiar e instruir para abrir detalhe">4</a></td>
+      <td>2000013055195008</td>
+      <td>2025-09-15 19:57:00</td>
+      <td>-197.85</td>
+      <td>983.86</td>
+      <td>983.86</td>
+      <td>0</td>
+      <td>NR3873-2</td>
+      <td>786.01</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-197.85</td>
+      <td>197.85</td>
+      <td>197.85</td>
+      <td>-197.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009172870713" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009172870713" title="Copiar e instruir para abrir detalhe">5</a></td>
+      <td>2000009172870713</td>
+      <td>2025-09-10 14:16:00</td>
+      <td>-197.85</td>
+      <td>987.51</td>
+      <td>987.51</td>
+      <td>0</td>
+      <td>NR5590-2</td>
+      <td>789.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-197.85</td>
+      <td>197.85</td>
+      <td>197.85</td>
+      <td>-197.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009111428449" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009111428449" title="Copiar e instruir para abrir detalhe">6</a></td>
+      <td>2000009111428449</td>
+      <td>2025-09-05 13:17:00</td>
+      <td>-197.85</td>
+      <td>945.17</td>
+      <td>945.17</td>
+      <td>0</td>
+      <td>KIT0514</td>
+      <td>747.32</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-197.85</td>
+      <td>197.85</td>
+      <td>197.85</td>
+      <td>-197.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013212607368" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013212607368" title="Copiar e instruir para abrir detalhe">7</a></td>
+      <td>2000013212607368</td>
+      <td>2025-09-29 16:30:00</td>
+      <td>-133.35</td>
+      <td>673.01</td>
+      <td>673.01</td>
+      <td>0</td>
+      <td>NR1058-1</td>
+      <td>539.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009383019857" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009383019857" title="Copiar e instruir para abrir detalhe">8</a></td>
+      <td>2000009383019857</td>
+      <td>2025-09-29 10:25:00</td>
+      <td>-133.35</td>
+      <td>640.63</td>
+      <td>640.63</td>
+      <td>0</td>
+      <td>NR1058-1</td>
+      <td>507.28</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009322233473" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009322233473" title="Copiar e instruir para abrir detalhe">9</a></td>
+      <td>2000009322233473</td>
+      <td>2025-09-23 18:49:00</td>
+      <td>-133.35</td>
+      <td>699.16</td>
+      <td>699.16</td>
+      <td>0</td>
+      <td>NR5375</td>
+      <td>565.81</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013134462236" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013134462236" title="Copiar e instruir para abrir detalhe">10</a></td>
+      <td>2000013134462236</td>
+      <td>2025-09-22 18:03:00</td>
+      <td>-133.35</td>
+      <td>640.63</td>
+      <td>640.63</td>
+      <td>0</td>
+      <td>NR1058-1</td>
+      <td>507.28</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009303551229" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009303551229" title="Copiar e instruir para abrir detalhe">11</a></td>
+      <td>2000009303551229</td>
+      <td>2025-09-22 10:58:00</td>
+      <td>-133.35</td>
+      <td>717.01</td>
+      <td>717.01</td>
+      <td>0</td>
+      <td>NR0851-1</td>
+      <td>583.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009278911169" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009278911169" title="Copiar e instruir para abrir detalhe">12</a></td>
+      <td>2000009278911169</td>
+      <td>2025-09-19 17:22:00</td>
+      <td>-133.35</td>
+      <td>673.01</td>
+      <td>673.01</td>
+      <td>0</td>
+      <td>NR1058-1</td>
+      <td>539.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013090848972" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013090848972" title="Copiar e instruir para abrir detalhe">13</a></td>
+      <td>2000013090848972</td>
+      <td>2025-09-18 15:25:00</td>
+      <td>-133.35</td>
+      <td>653.97</td>
+      <td>653.97</td>
+      <td>0</td>
+      <td>NR0851-1</td>
+      <td>513.62</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009250513585" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009250513585" title="Copiar e instruir para abrir detalhe">14</a></td>
+      <td>2000009250513585</td>
+      <td>2025-09-17 10:25:00</td>
+      <td>-133.35</td>
+      <td>624.44</td>
+      <td>624.44</td>
+      <td>0</td>
+      <td>NR1058-1</td>
+      <td>474.90</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009230154589" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009230154589" title="Copiar e instruir para abrir detalhe">15</a></td>
+      <td>2000009230154589</td>
+      <td>2025-09-15 18:31:00</td>
+      <td>-133.35</td>
+      <td>760.03</td>
+      <td>760.03</td>
+      <td>0</td>
+      <td>KIT0154</td>
+      <td>606.02</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009222584833" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009222584833" title="Copiar e instruir para abrir detalhe">16</a></td>
+      <td>2000009222584833</td>
+      <td>2025-09-15 07:35:00</td>
+      <td>-133.35</td>
+      <td>614.01</td>
+      <td>614.01</td>
+      <td>0</td>
+      <td>NR1064-2</td>
+      <td>480.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009164809157" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009164809157" title="Copiar e instruir para abrir detalhe">17</a></td>
+      <td>2000009164809157</td>
+      <td>2025-09-09 21:33:00</td>
+      <td>-133.35</td>
+      <td>653.62</td>
+      <td>653.62</td>
+      <td>0</td>
+      <td>NR1064-1</td>
+      <td>520.27</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012981876946" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012981876946" title="Copiar e instruir para abrir detalhe">18</a></td>
+      <td>2000012981876946</td>
+      <td>2025-09-09 16:27:00</td>
+      <td>-133.35</td>
+      <td>794.22</td>
+      <td>794.22</td>
+      <td>0</td>
+      <td>NR3511-2</td>
+      <td>660.87</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009135260201" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009135260201" title="Copiar e instruir para abrir detalhe">19</a></td>
+      <td>2000009135260201</td>
+      <td>2025-09-07 19:52:00</td>
+      <td>-133.35</td>
+      <td>640.63</td>
+      <td>640.63</td>
+      <td>0</td>
+      <td>NR1058-1</td>
+      <td>507.28</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012915167774" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012915167774" title="Copiar e instruir para abrir detalhe">20</a></td>
+      <td>2000012915167774</td>
+      <td>2025-09-04 09:27:00</td>
+      <td>-133.35</td>
+      <td>640.63</td>
+      <td>640.63</td>
+      <td>0</td>
+      <td>NR1058-2</td>
+      <td>507.28</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009057367841" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009057367841" title="Copiar e instruir para abrir detalhe">21</a></td>
+      <td>2000009057367841</td>
+      <td>2025-09-01 10:41:00</td>
+      <td>-133.35</td>
+      <td>640.63</td>
+      <td>640.63</td>
+      <td>0</td>
+      <td>NR1058-2</td>
+      <td>507.28</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-133.35</td>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>-133.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009308912701" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009308912701" title="Copiar e instruir para abrir detalhe">22</a></td>
+      <td>2000009308912701</td>
+      <td>2025-09-22 18:04:00</td>
+      <td>-80.85</td>
+      <td>831.59</td>
+      <td>831.59</td>
+      <td>0</td>
+      <td>NR5034-1</td>
+      <td>750.74</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-80.85</td>
+      <td>80.85</td>
+      <td>80.85</td>
+      <td>-80.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009254809937" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009254809937" title="Copiar e instruir para abrir detalhe">23</a></td>
+      <td>2000009254809937</td>
+      <td>2025-09-17 16:07:00</td>
+      <td>-80.85</td>
+      <td>490.95</td>
+      <td>490.95</td>
+      <td>0</td>
+      <td>NR4177</td>
+      <td>396.58</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-80.85</td>
+      <td>80.85</td>
+      <td>80.85</td>
+      <td>-80.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012931606880" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012931606880" title="Copiar e instruir para abrir detalhe">24</a></td>
+      <td>2000012931606880</td>
+      <td>2025-09-05 16:13:00</td>
+      <td>-80.85</td>
+      <td>763.49</td>
+      <td>763.49</td>
+      <td>0</td>
+      <td>NR5380-2</td>
+      <td>682.64</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-80.85</td>
+      <td>80.85</td>
+      <td>80.85</td>
+      <td>-80.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012928105348" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012928105348" title="Copiar e instruir para abrir detalhe">25</a></td>
+      <td>2000012928105348</td>
+      <td>2025-09-05 09:28:00</td>
+      <td>-80.85</td>
+      <td>508.97</td>
+      <td>508.97</td>
+      <td>0</td>
+      <td>NR4177</td>
+      <td>428.12</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-80.85</td>
+      <td>80.85</td>
+      <td>80.85</td>
+      <td>-80.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013087500884" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013087500884" title="Copiar e instruir para abrir detalhe">26</a></td>
+      <td>2000013087500884</td>
+      <td>2025-09-18 13:07:00</td>
+      <td>-78.99</td>
+      <td>277.30</td>
+      <td>277.30</td>
+      <td>0</td>
+      <td>NR2365-1</td>
+      <td>184.80</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-78.99</td>
+      <td>78.99</td>
+      <td>78.99</td>
+      <td>-78.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009113361931" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009113361931" title="Copiar e instruir para abrir detalhe">27</a></td>
+      <td>2000009113361931</td>
+      <td>2025-09-05 16:07:00</td>
+      <td>-74.85</td>
+      <td>322.47</td>
+      <td>322.47</td>
+      <td>0</td>
+      <td>GB0718</td>
+      <td>247.62</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-74.85</td>
+      <td>74.85</td>
+      <td>74.85</td>
+      <td>-74.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013158056916" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013158056916" title="Copiar e instruir para abrir detalhe">28</a></td>
+      <td>2000013158056916</td>
+      <td>2025-09-24 15:17:00</td>
+      <td>-68.00</td>
+      <td>262.66</td>
+      <td>262.66</td>
+      <td>0</td>
+      <td>NR3692-2</td>
+      <td>194.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-68.00</td>
+      <td>68.00</td>
+      <td>68.00</td>
+      <td>-68.00</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009166567633" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009166567633" title="Copiar e instruir para abrir detalhe">29</a></td>
+      <td>2000009166567633</td>
+      <td>2025-09-09 23:39:00</td>
+      <td>-68.00</td>
+      <td>255.67</td>
+      <td>255.67</td>
+      <td>0</td>
+      <td>NR3668-1</td>
+      <td>187.67</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-68.00</td>
+      <td>68.00</td>
+      <td>68.00</td>
+      <td>-68.00</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012894101278" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012894101278" title="Copiar e instruir para abrir detalhe">30</a></td>
+      <td>2000012894101278</td>
+      <td>2025-09-02 17:31:00</td>
+      <td>-68.00</td>
+      <td>239.52</td>
+      <td>239.52</td>
+      <td>0</td>
+      <td>NR1210</td>
+      <td>171.52</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-68.00</td>
+      <td>68.00</td>
+      <td>68.00</td>
+      <td>-68.00</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012932848332" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012932848332" title="Copiar e instruir para abrir detalhe">31</a></td>
+      <td>2000012932848332</td>
+      <td>2025-09-05 16:06:00</td>
+      <td>-67.99</td>
+      <td>186.95</td>
+      <td>186.95</td>
+      <td>0</td>
+      <td>NR4213</td>
+      <td>50.97</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-67.99</td>
+      <td>67.99</td>
+      <td>67.99</td>
+      <td>-67.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009076432641" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009076432641" title="Copiar e instruir para abrir detalhe">32</a></td>
+      <td>2000009076432641</td>
+      <td>2025-09-02 17:47:00</td>
+      <td>-67.35</td>
+      <td>307.37</td>
+      <td>307.37</td>
+      <td>0</td>
+      <td>CP0243</td>
+      <td>240.02</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-67.35</td>
+      <td>67.35</td>
+      <td>67.35</td>
+      <td>-67.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009377693577" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009377693577" title="Copiar e instruir para abrir detalhe">33</a></td>
+      <td>2000009377693577</td>
+      <td>2025-09-28 19:50:00</td>
+      <td>-66.10</td>
+      <td>236.15</td>
+      <td>236.15</td>
+      <td>0</td>
+      <td>NR3733</td>
+      <td>170.05</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-66.10</td>
+      <td>66.10</td>
+      <td>66.10</td>
+      <td>-66.10</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013070667734" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013070667734" title="Copiar e instruir para abrir detalhe">34</a></td>
+      <td>2000013070667734</td>
+      <td>2025-09-16 22:57:00</td>
+      <td>-65.10</td>
+      <td>234.80</td>
+      <td>234.80</td>
+      <td>0</td>
+      <td>KIT0262</td>
+      <td>169.70</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-65.10</td>
+      <td>65.10</td>
+      <td>65.10</td>
+      <td>-65.10</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012933035586" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012933035586" title="Copiar e instruir para abrir detalhe">35</a></td>
+      <td>2000012933035586</td>
+      <td>2025-09-05 16:24:00</td>
+      <td>-65.10</td>
+      <td>265.07</td>
+      <td>265.07</td>
+      <td>0</td>
+      <td>NR2864-2</td>
+      <td>199.97</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-65.10</td>
+      <td>65.10</td>
+      <td>65.10</td>
+      <td>-65.10</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009056452305" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009056452305" title="Copiar e instruir para abrir detalhe">36</a></td>
+      <td>2000009056452305</td>
+      <td>2025-09-01 09:10:00</td>
+      <td>-64.35</td>
+      <td>1317.01</td>
+      <td>1317.01</td>
+      <td>0</td>
+      <td>NR2647</td>
+      <td>1252.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-64.35</td>
+      <td>64.35</td>
+      <td>64.35</td>
+      <td>-64.35</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013081933676" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013081933676" title="Copiar e instruir para abrir detalhe">37</a></td>
+      <td>2000013081933676</td>
+      <td>2025-09-17 20:34:00</td>
+      <td>-59.85</td>
+      <td>318.51</td>
+      <td>318.51</td>
+      <td>0</td>
+      <td>NR5589</td>
+      <td>258.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-59.85</td>
+      <td>59.85</td>
+      <td>59.85</td>
+      <td>-59.85</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013078403654" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013078403654" title="Copiar e instruir para abrir detalhe">38</a></td>
+      <td>2000013078403654</td>
+      <td>2025-09-17 15:50:00</td>
+      <td>-55.86</td>
+      <td>184.73</td>
+      <td>184.73</td>
+      <td>0</td>
+      <td>NR1349</td>
+      <td>128.87</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-55.86</td>
+      <td>55.86</td>
+      <td>55.86</td>
+      <td>-55.86</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009143878413" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009143878413" title="Copiar e instruir para abrir detalhe">39</a></td>
+      <td>2000009143878413</td>
+      <td>2025-09-08 14:11:00</td>
+      <td>-55.86</td>
+      <td>182.83</td>
+      <td>182.83</td>
+      <td>0</td>
+      <td>CP1040</td>
+      <td>126.97</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-55.86</td>
+      <td>55.86</td>
+      <td>55.86</td>
+      <td>-55.86</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012917911780" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012917911780" title="Copiar e instruir para abrir detalhe">40</a></td>
+      <td>2000012917911780</td>
+      <td>2025-09-04 13:06:00</td>
+      <td>-43.20</td>
+      <td>2522.06</td>
+      <td>2522.06</td>
+      <td>0</td>
+      <td>NR5172</td>
+      <td>2435.66</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-43.20</td>
+      <td>43.20</td>
+      <td>43.20</td>
+      <td>-43.20</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009317194573" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009317194573" title="Copiar e instruir para abrir detalhe">41</a></td>
+      <td>2000009317194573</td>
+      <td>2025-09-23 12:01:00</td>
+      <td>-27.90</td>
+      <td>114.60</td>
+      <td>114.60</td>
+      <td>0</td>
+      <td>NR1175</td>
+      <td>14.45</td>
+      <td>6</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-27.90</td>
+      <td>27.90</td>
+      <td>27.90</td>
+      <td>-27.90</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009304099845" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009304099845" title="Copiar e instruir para abrir detalhe">42</a></td>
+      <td>2000009304099845</td>
+      <td>2025-09-22 11:43:00</td>
+      <td>-23.45</td>
+      <td>233.45</td>
+      <td>233.45</td>
+      <td>0</td>
+      <td>NR2365-1</td>
+      <td>210.00</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-23.45</td>
+      <td>23.45</td>
+      <td>23.45</td>
+      <td>-23.45</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009304129549" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009304129549" title="Copiar e instruir para abrir detalhe">43</a></td>
+      <td>2000009304129549</td>
+      <td>2025-09-22 11:44:00</td>
+      <td>-22.45</td>
+      <td>622.11</td>
+      <td>622.11</td>
+      <td>0</td>
+      <td>NR5486</td>
+      <td>599.66</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-22.45</td>
+      <td>22.45</td>
+      <td>22.45</td>
+      <td>-22.45</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009235289165" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009235289165" title="Copiar e instruir para abrir detalhe">44</a></td>
+      <td>2000009235289165</td>
+      <td>2025-09-16 06:38:00</td>
+      <td>-22.45</td>
+      <td>294.23</td>
+      <td>294.23</td>
+      <td>0</td>
+      <td>NR4337</td>
+      <td>262.82</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-22.45</td>
+      <td>22.45</td>
+      <td>22.45</td>
+      <td>-22.45</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012980248732" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012980248732" title="Copiar e instruir para abrir detalhe">45</a></td>
+      <td>2000012980248732</td>
+      <td>2025-09-09 14:39:00</td>
+      <td>-22.00</td>
+      <td>80.57</td>
+      <td>80.57</td>
+      <td>0</td>
+      <td>NR2769-2</td>
+      <td>58.57</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-22.00</td>
+      <td>22.00</td>
+      <td>22.00</td>
+      <td>-22.00</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009291217465" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009291217465" title="Copiar e instruir para abrir detalhe">46</a></td>
+      <td>2000009291217465</td>
+      <td>2025-09-20 23:55:00</td>
+      <td>-21.10</td>
+      <td>220.60</td>
+      <td>220.60</td>
+      <td>0</td>
+      <td>NR2365-1</td>
+      <td>199.50</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-21.10</td>
+      <td>21.10</td>
+      <td>21.10</td>
+      <td>-21.10</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009070609073" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009070609073" title="Copiar e instruir para abrir detalhe">47</a></td>
+      <td>2000009070609073</td>
+      <td>2025-09-02 10:10:00</td>
+      <td>-20.60</td>
+      <td>124.44</td>
+      <td>124.44</td>
+      <td>0</td>
+      <td>NR4922</td>
+      <td>51.92</td>
+      <td>2</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-20.60</td>
+      <td>20.60</td>
+      <td>20.60</td>
+      <td>-20.60</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009305587009" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009305587009" title="Copiar e instruir para abrir detalhe">48</a></td>
+      <td>2000009305587009</td>
+      <td>2025-09-22 13:39:00</td>
+      <td>-17.16</td>
+      <td>139.82</td>
+      <td>139.82</td>
+      <td>0</td>
+      <td>NR0969</td>
+      <td>122.66</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-17.16</td>
+      <td>17.16</td>
+      <td>17.16</td>
+      <td>-17.16</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013016289554" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013016289554" title="Copiar e instruir para abrir detalhe">49</a></td>
+      <td>2000013016289554</td>
+      <td>2025-09-12 07:41:00</td>
+      <td>-16.69</td>
+      <td>92.34</td>
+      <td>92.34</td>
+      <td>0</td>
+      <td>NR3103</td>
+      <td>68.66</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-16.69</td>
+      <td>16.69</td>
+      <td>16.69</td>
+      <td>-16.69</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013168129298" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013168129298" title="Copiar e instruir para abrir detalhe">50</a></td>
+      <td>2000013168129298</td>
+      <td>2025-09-25 12:07:00</td>
+      <td>-15.96</td>
+      <td>143.48</td>
+      <td>143.48</td>
+      <td>0</td>
+      <td>NR1349</td>
+      <td>127.52</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-15.96</td>
+      <td>15.96</td>
+      <td>15.96</td>
+      <td>-15.96</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009229979253" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009229979253" title="Copiar e instruir para abrir detalhe">51</a></td>
+      <td>2000009229979253</td>
+      <td>2025-09-15 18:19:00</td>
+      <td>-15.96</td>
+      <td>159.61</td>
+      <td>159.61</td>
+      <td>0</td>
+      <td>NR0212-1</td>
+      <td>138.91</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-15.96</td>
+      <td>15.96</td>
+      <td>15.96</td>
+      <td>-15.96</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009166216581" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009166216581" title="Copiar e instruir para abrir detalhe">52</a></td>
+      <td>2000009166216581</td>
+      <td>2025-09-09 23:11:00</td>
+      <td>-14.99</td>
+      <td>89.64</td>
+      <td>89.64</td>
+      <td>0</td>
+      <td>NR2717-2</td>
+      <td>59.66</td>
+      <td>1</td>
+      <td>Não apto para venda</td>
+      <td>0.0</td>
+      <td>-14.99</td>
+      <td>14.99</td>
+      <td>14.99</td>
+      <td>-14.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012876943556" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012876943556" title="Copiar e instruir para abrir detalhe">53</a></td>
+      <td>2000012876943556</td>
+      <td>2025-09-01 13:55:00</td>
+      <td>-13.00</td>
+      <td>87.72</td>
+      <td>87.72</td>
+      <td>0</td>
+      <td>NR2995-1</td>
+      <td>74.72</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-13.00</td>
+      <td>13.00</td>
+      <td>13.00</td>
+      <td>-13.00</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009290973765" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009290973765" title="Copiar e instruir para abrir detalhe">54</a></td>
+      <td>2000009290973765</td>
+      <td>2025-09-20 23:15:00</td>
+      <td>-12.50</td>
+      <td>62.00</td>
+      <td>62.00</td>
+      <td>0</td>
+      <td>NR3504-2</td>
+      <td>49.50</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-12.50</td>
+      <td>12.50</td>
+      <td>12.50</td>
+      <td>-12.50</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000012916453752" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000012916453752" title="Copiar e instruir para abrir detalhe">55</a></td>
+      <td>2000012916453752</td>
+      <td>2025-09-04 11:16:00</td>
+      <td>-9.99</td>
+      <td>33.70</td>
+      <td>33.70</td>
+      <td>0</td>
+      <td>NR1175</td>
+      <td>13.72</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-9.99</td>
+      <td>9.99</td>
+      <td>9.99</td>
+      <td>-9.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009060872405" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009060872405" title="Copiar e instruir para abrir detalhe">56</a></td>
+      <td>2000009060872405</td>
+      <td>2025-09-01 15:08:00</td>
+      <td>-9.99</td>
+      <td>43.40</td>
+      <td>43.40</td>
+      <td>0</td>
+      <td>NR0650</td>
+      <td>23.42</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-9.99</td>
+      <td>9.99</td>
+      <td>9.99</td>
+      <td>-9.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000013112585918" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000013112585918" title="Copiar e instruir para abrir detalhe">57</a></td>
+      <td>2000013112585918</td>
+      <td>2025-09-20 16:22:00</td>
+      <td>-9.90</td>
+      <td>51.45</td>
+      <td>51.45</td>
+      <td>0</td>
+      <td>NR3977</td>
+      <td>40.18</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-9.90</td>
+      <td>9.90</td>
+      <td>9.90</td>
+      <td>-9.90</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009116696413" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009116696413" title="Copiar e instruir para abrir detalhe">58</a></td>
+      <td>2000009116696413</td>
+      <td>2025-09-05 21:13:00</td>
+      <td>-9.74</td>
+      <td>82.40</td>
+      <td>82.40</td>
+      <td>0</td>
+      <td>GB4986</td>
+      <td>62.92</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-9.74</td>
+      <td>9.74</td>
+      <td>9.74</td>
+      <td>-9.74</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009384554373" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009384554373" title="Copiar e instruir para abrir detalhe">59</a></td>
+      <td>2000009384554373</td>
+      <td>2025-09-29 12:23:00</td>
+      <td>-8.99</td>
+      <td>71.81</td>
+      <td>71.81</td>
+      <td>0</td>
+      <td>KIT0351</td>
+      <td>53.83</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-8.99</td>
+      <td>8.99</td>
+      <td>8.99</td>
+      <td>-8.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009185942781" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009185942781" title="Copiar e instruir para abrir detalhe">60</a></td>
+      <td>2000009185942781</td>
+      <td>2025-09-11 14:49:00</td>
+      <td>-8.99</td>
+      <td>82.64</td>
+      <td>82.64</td>
+      <td>0</td>
+      <td>NR1866</td>
+      <td>64.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-8.99</td>
+      <td>8.99</td>
+      <td>8.99</td>
+      <td>-8.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009296506293" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009296506293" title="Copiar e instruir para abrir detalhe">61</a></td>
+      <td>2000009296506293</td>
+      <td>2025-09-21 17:15:00</td>
+      <td>-6.99</td>
+      <td>38.35</td>
+      <td>38.35</td>
+      <td>0</td>
+      <td>NR2692</td>
+      <td>24.37</td>
+      <td>1</td>
+      <td>Apto para venda</td>
+      <td>0.0</td>
+      <td>-6.99</td>
+      <td>6.99</td>
+      <td>6.99</td>
+      <td>-6.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009210306173" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009210306173" title="Copiar e instruir para abrir detalhe">62</a></td>
+      <td>2000009210306173</td>
+      <td>2025-09-13 20:40:00</td>
+      <td>-6.99</td>
+      <td>85.64</td>
+      <td>85.64</td>
+      <td>0</td>
+      <td>NR5443-1</td>
+      <td>71.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-6.99</td>
+      <td>6.99</td>
+      <td>6.99</td>
+      <td>-6.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009061420161" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009061420161" title="Copiar e instruir para abrir detalhe">63</a></td>
+      <td>2000009061420161</td>
+      <td>2025-09-01 15:49:00</td>
+      <td>-6.99</td>
+      <td>50.50</td>
+      <td>50.50</td>
+      <td>0</td>
+      <td>NR0300</td>
+      <td>18.26</td>
+      <td>2</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-6.99</td>
+      <td>6.99</td>
+      <td>6.99</td>
+      <td>-6.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009374459153" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009374459153" title="Copiar e instruir para abrir detalhe">64</a></td>
+      <td>2000009374459153</td>
+      <td>2025-09-28 14:18:00</td>
+      <td>-5.99</td>
+      <td>74.91</td>
+      <td>74.91</td>
+      <td>0</td>
+      <td>GB4986</td>
+      <td>62.93</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-5.99</td>
+      <td>5.99</td>
+      <td>5.99</td>
+      <td>-5.99</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009306287073" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009306287073" title="Copiar e instruir para abrir detalhe">65</a></td>
+      <td>2000009306287073</td>
+      <td>2025-09-22 14:33:00</td>
+      <td>-5.00</td>
+      <td>88.66</td>
+      <td>88.66</td>
+      <td>0</td>
+      <td>GB4986</td>
+      <td>78.66</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-5.00</td>
+      <td>5.00</td>
+      <td>5.00</td>
+      <td>-5.00</td>
+    </tr>
+    <tr>
+      <td><button class="copy-btn" data-order="2000009366994141" title="Copiar Order ID">📋</button> <a href="#" class="open-link" data-order="2000009366994141" title="Copiar e instruir para abrir detalhe">66</a></td>
+      <td>2000009366994141</td>
+      <td>2025-09-27 16:23:00</td>
+      <td>-4.50</td>
+      <td>30.45</td>
+      <td>30.45</td>
+      <td>0</td>
+      <td>NR0650</td>
+      <td>21.45</td>
+      <td>1</td>
+      <td></td>
+      <td>0.0</td>
+      <td>-4.50</td>
+      <td>4.50</td>
+      <td>4.50</td>
+      <td>-4.50</td>
+    </tr>
+  </tbody>
+</table></div>
+        <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            // initialize DataTable
+            $('#debug_tbl').DataTable({"pageLength":25, "lengthMenu":[10,25,50,100]});
+            // copy button handler
+            document.querySelectorAll('#debug_tbl .copy-btn').forEach(function(b){
+                b.addEventListener('click', function(e){
+                    var order = this.getAttribute('data-order') || '';
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(order).then(function(){ alert('Order ID copiado: ' + order); }).catch(function(){ alert('Copiar Order ID: ' + order); });
+                    } else { alert('Copiar Order ID: ' + order); }
+                    e.stopPropagation();
+                });
+            });
+      // open-link handler (copies and instructs user)
+      document.querySelectorAll('#debug_tbl .open-link').forEach(function(a){
+        a.addEventListener('click', function(e){
+          e.preventDefault();
+          var order = this.getAttribute('data-order') || '';
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(order).then(function(){
+              alert('Order ID copiado: ' + order + '\nCole em "Abrir detalhe por Order ID" para ver o detalhe.');
+            }).catch(function(){
+              alert('Order ID: ' + order);
+            });
+          } else {
+            alert('Order ID: ' + order);
+          }
+        });
+      });
+        });
+        </script>
+        

@@ -1,0 +1,24 @@
+{
+  "mappings": {
+    "n_de_venda": ["n.º de venda", "n. de venda", "nº de venda", "numero_de_venda", "order_id", "n.o_de_venda", "n_o_de_venda"],
+    "data_venda": ["data da venda", "data_de_venda", "date", "data_da_venda", "data_a_caminho"],
+    "estado": ["estado", "status", "descricao do status", "description", "resultado"],
+    "total_brl": ["total (brl)", "total", "valor", "price", "amount", "total_(brl)"],
+    "tarifas_envio_brl": ["tarifas de envio (brl)", "tarifas de envio", "shipping_fee", "tarifas_de_envio_(brl)"],
+    "cancelamentos_reembolsos_brl": ["cancelamentos e reembolsos (brl)", "cancelamentos", "refunds", "cancelamentos_e_reembolsos_(brl)", "cancelamentos"],
+    "preco_unitario_brl": ["preco unitario de venda do anuncio (brl)", "preco unitario", "unit_price", "preco_unitario_de_venda_do_anuncio_(brl)"],
+    "sku": ["sku", "codigo", "seller_sku"],
+    "anuncio_id": ["# de anúncio", "num_anuncio", "listing_id", "#_de_anuncio", "num_de_anuncio"],
+    "comprador": ["comprador", "buyer", "cliente"],
+    "reclamacao_aberta": ["reclamacao aberta", "reclamação aberta", "reclamação aberta", "reclamacao_aberta"],
+    "reclamacao_encerrada": ["reclamacao encerrada", "reclamação encerrada", "reclamacao_encerrada"],
+    "em_mediacao": ["em mediacao", "em mediação", "em media", "em_mediacao"],
+    "motivo_resultado": ["motivo do resultado", "motivo", "result_reason", "motivo_do_resultado"],
+    "receita_por_produtos_brl": ["receita por produtos (brl)", "receita por produtos (brl)", "receita_por_produtos_(brl)"],
+    "receita_por_envio_brl": ["receita por envio (brl)", "receita_por_envio_(brl)"],
+    "tarifa_venda_impostos_brl": ["tarifa de venda e impostos (brl)", "tarifa_de_venda_e_impostos_(brl)", "tarifa_de_venda_e_impostos"],
+    "dinheiro_liberado": ["dinheiro liberado", "dinheiro_liberado"],
+    "data_de_revisao": ["data de revisao", "data_de_revisao", "data_de_revisao"],
+    "url_acompanhamento": ["url de acompanhamento", "url_de_acompanhamento", "url_de_acompanhamento.1", "url_de_acompanhamento_1"]
+  }
+}

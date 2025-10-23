@@ -1,0 +1,62 @@
+Projeto: Análise de Devoluções Mercado Livre - Próximos passos
+
+Objetivo resumido:
+- Consolidar exports (CSV/XLSX) do Mercado Livre em uma base limpa (SQLite / CSV consolidado).
+- Identificar vendas devolvidas/canceladas com valores pendentes ou negativos (prejuízos) e gerar listas acionáveis.
+- Fornecer uma UI simples (cards) para que a funcionária acompanhe, abra o detalhe da venda/anúncio e marque o status.
+
+Prioridade imediata (curto prazo):
+1) Reunir os arquivos (coloque todos em C:\Users\Pichau\csvs). Preferência: extrações mensais por 6 meses.
+2) Rodar o ETL (gera consolidado.csv e ml_devolucoes.db):
+   python C:\Users\Pichau\analise_progress\etl_to_sqlite.py --input-dir C:\Users\Pichau\csvs --db C:\Users\Pichau\analise_progress\ml_devolucoes.db --map C:\Users\Pichau\analise_progress\columns_map.json --out-csv C:\Users\Pichau\analise_progress\consolidado.csv
+3) Conferir `consolidado.csv` para validar mapping e formatos de valores/datas. Ajustar `columns_map.json` conforme necessário.
+
+Campos mínimos necessários para a UI e links:
+- order_id / N.º de venda (para montar link ao detalhe)
+- anuncio_id / # de anúncio (para abrir o anúncio)
+- sku
+- comprador
+- data_venda / data_retorno
+- total_brl, tarifas, frete, cancelamentos_reembolsos
+- indicadores: reclamacao_aberta, em_mediacao, reclamacao_encerrada
+- motivo_resultado (texto explicativo)
+
+Ideias de UI (cards, não tabelas):
+- Grid de cards; cada card exibe: SKU, comprador, data, soma_valores, motivo e botões:
+  - Abrir detalhe (link para painel de pós‑venda)
+  - Abrir anúncio
+  - Marcar: Em andamento / Verificado / Concluído
+  - Exportar / Copiar link
+- Cores por prioridade: vermelho = soma negativa; amarelo = pendente; cinza = neutro
+- Sidebar com filtros (período, SKU, motivo, só prejuízos, indicador específico)
+
+Automação e operações:
+- Exportar checklist semanal (CSV) para a pessoa responsável.
+- Salvar histórico de ações (quem marcou o que) no SQLite para auditoria.
+- Se desejar: integrar criação de tarefas (Trello) ou enviar relatório por e‑mail.
+
+Próximas ações sugeridas (escolher uma):
+A) Ajusto `columns_map.json` com as colunas essenciais a partir de amostras (você me indica as 3-5 variações que mais aparecem).
+B) Gero o app Streamlit protótipo `app_streamlit.py` e te mostro o comando para rodar.
+C) Executo o ETL localmente (se você confirmar que os CSVs estão em C:\Users\Pichau\csvs).
+
+Comandos úteis recapitulados:
+- Rodar ETL:
+  python C:\Users\Pichau\analise_progress\etl_to_sqlite.py --input-dir C:\Users\Pichau\csvs --db C:\Users\Pichau\analise_progress\ml_devolucoes.db --map C:\Users\Pichau\analise_progress\columns_map.json --out-csv C:\Users\Pichau\analise_progress\consolidado.csv
+- Rodar protótipo Streamlit (quando criado):
+  streamlit run C:\Users\Pichau\analise_progress\app_streamlit.py
+
+Observação sobre links: se a coluna `N.º de venda` contém códigos complexos, me envie um exemplo para eu montar a URL exata do detalhe; se já existir URL no export, usaremos diretamente.
+
+Entrega neste pacote:
+- analisar_devolucoes.py (script analisador)
+- pendentes.csv / prejuizos.csv (saídas atuais)
+- etl_to_sqlite.py (ETL básico)
+- columns_map.json (template de mapeamento)
+- requirements.txt
+- README.md
+- analise_devolucoes_progress.zip
+
+Se quiser, eu já gero o protótipo Streamlit agora (opção B) e coloco o arquivo em C:\Users\Pichau\analise_progress. Diga qual opção prefere.
+
+— Fim do arquivo

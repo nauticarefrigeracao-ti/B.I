@@ -1,0 +1,37 @@
+Contexto para retomar o projeto — 2025-10-22
+
+Workspace root: c:\Users\Pichau\analise_progress
+Main app: app_streamlit.py
+Database: ml_devolucoes.db (SQLite) - contém tables `orders`, `order_items`, `reviews`, `actions`.
+Assets: assets/ contains: 2.png, favicon_gold.png, logo_round.png. These are served by Streamlit at /assets/<file> but in-code we now use local paths when calling st.image.
+Exports: reports/ holds csv/xlsx exports.
+
+Key functions and files:
+- app_streamlit.py
+  - render_interactive_table(df, table_id='tbl') -> returns styled HTML (no scripts)
+  - get_months(), load_financials() -> data loaders from SQLite
+  - ensure_reviews_table(), get_reviews_map(), set_review() -> review persistence
+  - create_xlsx_export(df, path, display_names) -> saves formatted XLSX with hyperlinks
+
+Recent edits (high level):
+- Removed inline JS and CDN script tags from render_interactive_table to avoid iframe sandbox errors.
+- Replaced header raw-HTML with Streamlit primitives (st.columns/st.image/st.markdown) to reliably render logos.
+- Fixed multiple indentation and scope bugs that caused runtime import/compile errors in Streamlit.
+- Ensured st.image uses direct filesystem paths (str(Path('assets')/name)).
+
+Run notes:
+- To open the app: `streamlit run app_streamlit.py --server.address 127.0.0.1 --server.port 8501`
+- If images don't show: confirm files in `assets/`, then hard-refresh the browser.
+- To re-enable client-side interactivity for tables, plan to add `st-aggrid` and update requirements.
+
+Suggested next steps for the person picking up work:
+- (High) Integrate `st-aggrid` for interactive tables.
+- (Medium) Tweak header CSS and image sizes; consider preparing 32x32 favicon.
+- (Low) Add unit tests for load_financials and create_xlsx_export.
+
+Notes about environment and commands executed during this session:
+- Python: CPython 3.14 on Windows
+- Streamlit process managed via PowerShell; assets were copied into `assets/` from user's design folder.
+- Some debugging commands used: Invoke-WebRequest to validate asset URLs; importlib to syntax-check the module.
+
+End of context file.
