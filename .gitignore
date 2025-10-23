@@ -6,8 +6,12 @@ venv/
 *.pyo
 *.pyd
 *.sqlite
-*.db
-ml_devolucoes.db
+# NOTE: `ml_devolucoes.db` will be intentionally committed for deployment by request.
+# The generic `*.db` rule is kept commented to allow this one binary to be tracked.
+# If you later want to stop tracking, revert this change and run:
+#   git rm --cached ml_devolucoes.db
+# then re-add the pattern.
+## *.db
 reports/
 *.xlsx
 *.zip
