@@ -1,4 +1,6 @@
 import sqlite3
+import os
+import requests
 from pathlib import Path
 import pandas as pd
 import streamlit as st
@@ -81,6 +83,46 @@ def render_interactive_table(df, table_id='tbl'):
     return safe
 
 DB_PATH = Path('ml_devolucoes.db')
+
+
+def _download_db_from_env():
+    """If the local DB file is missing, try to download it from a URL in
+    the environment variable SQLITE_REMOTE_URL. This allows the deployed app
+    to fetch the same sqlite database you use locally without committing the
+    binary into the git repo.
+    """
+    if DB_PATH.exists():
+        return True
+
+    url = os.environ.get('SQLITE_REMOTE_URL')
+    if not url:
+        # Nothing to do
+        return False
+
+    try:
+        # Stream the download to avoid memory pressure
+        resp = requests.get(url, stream=True, timeout=30)
+        resp.raise_for_status()
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(DB_PATH, 'wb') as f:
+            for chunk in resp.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+        return True
+    except Exception as e:
+        # If download fails, leave a small log file for debugging
+        try:
+            with open('db_download_error.txt', 'w', encoding='utf-8') as ef:
+                ef.write(f"Failed to download {url}: {repr(e)}\n")
+        except Exception:
+            pass
+        return False
+
+
+# Attempt to fetch DB from remote when running in an environment where the
+# repository doesn't contain the sqlite file (e.g. Streamlit Cloud). If the
+# fetch fails, the rest of the app will surface an explanatory error later.
+_download_db_from_env()
 
 @st.cache_data
 def get_months():
