@@ -1,9 +1,0 @@
-metric,local,ml,diff,pct_diff
-pedidos,3322,3439.0,-117.0,-3.4021517883105554
-vendas_brutas,34453.0,754.9179999999999,33698.082,4463.806930024189
-unidades_vendidas,3875,4008.0,-133.0,-3.318363273453094
-qtd_canceladas,321,0.0,321.0,
-valor_canceladas,-69025.05,0.0,-69025.05,
-prejuizo_pendente,236081.23,0.0,236081.23,
-dinheiro_liberado,0.0,,,
-tarifas_totais,-166552.08000000002,,,
