@@ -1222,44 +1222,71 @@ def main():
 # Novo: converte colunas de timestamp (ISO/UTC) para America/Sao_Paulo para exibição
 def _convert_ts_for_display(df: pd.DataFrame, ts_cols):
     """
-    Convert timestamp columns for display:
-      - rows containing timezone info (Z or ±HH[:MM]) are parsed as UTC and converted to America/Sao_Paulo
-      - naive datetime strings/numpy datetimes are assumed to already be in America/Sao_Paulo (we localize but do not shift)
+    Convert timestamp columns for display (to America/Sao_Paulo).
+
+    Behavior:
+      - Prefer to parse all values as UTC where possible (this matches how
+        `set_review` stores timestamps: UTC-aware ISO strings).
+      - For values that can't be parsed as UTC, fall back to parsing as naive
+        datetimes and localizing them according to the environment setting
+        `NAIVE_TIMESTAMP_INTERPRETATION` which may be 'UTC' or 'LOCAL'.
+
+    Rationale: production contains a mix of naive and aware timestamps. Using
+    a single configurable rule avoids surprises; default is to treat naive as
+    UTC so stored UTC-like naive strings display correctly in America/Sao_Paulo.
     """
     if df is None or df.empty:
         return df
     if isinstance(ts_cols, str):
         ts_cols = [ts_cols]
 
+    # how to interpret naive timestamps: 'UTC' or 'LOCAL' (America/Sao_Paulo)
+    naive_mode = os.environ.get('NAIVE_TIMESTAMP_INTERPRETATION', 'UTC').upper()
     for c in ts_cols:
         if c not in df.columns:
             continue
 
-        # ensure a string series for pattern checks
-        s = df[c].astype(str)
+        try:
+            s = df[c]
+            # First, try parsing everything as UTC (this will interpret naive
+            # strings as UTC which is the safer default when timestamps were
+            # produced by servers/helpers that already used UTC).
+            parsed = pd.to_datetime(s, utc=True, errors='coerce')
 
-        # detect values that contain explicit timezone info (Z or +HH or -HH)
-        aware_mask = s.str.contains(r'Z|[+\-]\d{2}:?\d{2}', regex=True, na=False)
+            # For any values that failed parsing as UTC, try a naive parse and
+            # then localize according to naive_mode.
+            not_parsed = parsed.isna()
+            if not_parsed.any():
+                fallback = pd.to_datetime(s[not_parsed], errors='coerce')
+                if not fallback.empty:
+                    if naive_mode == 'UTC':
+                        try:
+                            fallback = fallback.dt.tz_localize('UTC')
+                        except Exception:
+                            # If localize fails, leave as NaT
+                            fallback = pd.Series([pd.NaT] * len(fallback), index=fallback.index)
+                    else:
+                        try:
+                            fallback = fallback.dt.tz_localize('America/Sao_Paulo')
+                        except Exception:
+                            fallback = pd.Series([pd.NaT] * len(fallback), index=fallback.index)
+                    # assign back
+                    parsed.loc[not_parsed] = fallback
 
-        # Handle aware values: parse as UTC then convert to Sao_Paulo
-        if aware_mask.any():
+            # Finally, convert all tz-aware times to America/Sao_Paulo and
+            # format for display. Any remaining NaT values become empty strings.
             try:
-                parsed = pd.to_datetime(df.loc[aware_mask, c], utc=True, errors='coerce')
-                parsed = parsed.dt.tz_convert("America/Sao_Paulo")
-                df.loc[aware_mask, c] = parsed.dt.strftime("%Y-%m-%d %H:%M:%S")
+                converted = parsed.dt.tz_convert('America/Sao_Paulo')
+                df[c] = converted.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
             except Exception:
-                df.loc[aware_mask, c] = pd.to_datetime(df.loc[aware_mask, c], errors='coerce').dt.strftime("%Y-%m-%d %H:%M:%S")
-
-        # Handle naive values: parse then localize to Sao_Paulo (assume they are local)
-        if (~aware_mask).any():
+                # best-effort fallback: try formatting without tz conversion
+                df[c] = parsed.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+        except Exception:
+            # Last resort: fallback to naive parse and string formatting
             try:
-                naive = pd.to_datetime(df.loc[~aware_mask, c], errors='coerce')
-                # localize only if not already tz-aware
-                if naive.dt.tz is None:
-                    naive = naive.dt.tz_localize("America/Sao_Paulo")
-                df.loc[~aware_mask, c] = naive.dt.strftime("%Y-%m-%d %H:%M:%S")
+                df[c] = pd.to_datetime(df[c], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
             except Exception:
-                df.loc[~aware_mask, c] = pd.to_datetime(df.loc[~aware_mask, c], errors='coerce').dt.strftime("%Y-%m-%d %H:%M:%S")
+                df[c] = df[c].astype(str).fillna('')
 
     return df
 
