@@ -4,7 +4,7 @@ import requests
 from pathlib import Path
 import pandas as pd
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timezone
 import importlib.util
 import html
 from openpyxl.utils import get_column_letter
@@ -307,7 +307,8 @@ def set_review(order_id: str, reviewed: bool, user: str = 'operator', descriptio
     ensure_reviews_table()
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
-    now = datetime.now().isoformat()
+    # store timestamps in UTC to avoid server/local timezone drift
+    now = datetime.now(tz=timezone.utc).isoformat()
     # Use REPLACE so we update existing rows; include review_description
     cur.execute('REPLACE INTO reviews (order_id, reviewed, reviewed_by, reviewed_at, review_description) VALUES (?,?,?,?,?)',
                 (order_id, 1 if reviewed else 0, user if reviewed else None, now if reviewed else None, description if reviewed else None))
@@ -811,7 +812,8 @@ def main():
             sample_display['Revisado_em'] = sample_display['order_id'].apply(lambda oid: reviews.get(str(oid), {}).get('reviewed_at'))
             # normalize review timestamp to the same display format as data_venda
             try:
-                sample_display['Revisado_em'] = pd.to_datetime(sample_display['Revisado_em'], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                # parse stored timestamps as UTC then convert to Sao_Paulo for display
+                sample_display['Revisado_em'] = pd.to_datetime(sample_display['Revisado_em'], utc=True, errors='coerce').dt.tz_convert('America/Sao_Paulo').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
             except Exception:
                 sample_display['Revisado_em'] = sample_display['Revisado_em'].fillna('').astype(str)
             # format prejuízo: we now use signed columns so negatives are shown (ML UI shows negative values)
@@ -1063,6 +1065,11 @@ def main():
                 export_df['Revisado'] = export_df['order_id'].apply(lambda oid: bool(reviews_map.get(str(oid), {}).get('reviewed', 0)))
                 export_df['Revisado_por'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
                 export_df['Revisado_em'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
+                # format exported review timestamp to local Brasilia time for readability
+                try:
+                    export_df['Revisado_em'] = pd.to_datetime(export_df['Revisado_em'], utc=True, errors='coerce').dt.tz_convert('America/Sao_Paulo').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                except Exception:
+                    pass
                 # add detail URL for each order so CSV consumers can open the sale detail directly
                 export_df['detail_url'] = export_df['order_id'].astype(str).apply(lambda oid: f'https://www.mercadolivre.com.br/vendas/{oid}/detalhe' if oid else '')
                 export_df.to_csv(out, index=False, encoding='utf-8-sig')
@@ -1090,6 +1097,10 @@ def main():
                 export_df['Revisado'] = export_df['order_id'].apply(lambda oid: bool(reviews_map.get(str(oid), {}).get('reviewed', 0)))
                 export_df['Revisado_por'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
                 export_df['Revisado_em'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
+                try:
+                    export_df['Revisado_em'] = pd.to_datetime(export_df['Revisado_em'], utc=True, errors='coerce').dt.tz_convert('America/Sao_Paulo').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                except Exception:
+                    pass
                 # rename columns to Portuguese friendly names where possible
                 display_names = {c: display_map.get(c, c) for c in export_df.columns}
                 export_df.rename(columns=display_names, inplace=True)
