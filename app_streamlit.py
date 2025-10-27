@@ -812,8 +812,30 @@ def main():
             sample_display['Revisado_em'] = sample_display['order_id'].apply(lambda oid: reviews.get(str(oid), {}).get('reviewed_at'))
             # normalize review timestamp to the same display format as data_venda
             try:
-                # parse stored timestamps as UTC then convert to Sao_Paulo for display
-                sample_display['Revisado_em'] = pd.to_datetime(sample_display['Revisado_em'], utc=True, errors='coerce').dt.tz_convert('America/Sao_Paulo').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                # Robust parsing for stored review timestamps:
+                # 1) try parsing as UTC-aware strings and convert to Sao_Paulo
+                # 2) for values that failed (NaT), try parsing as naive datetimes
+                #    and localize to America/Sao_Paulo (assume they were stored local)
+                s = sample_display['Revisado_em'].astype(object)
+                parsed_utc = pd.to_datetime(s, utc=True, errors='coerce')
+                tz = 'America/Sao_Paulo'
+                # initialize result series with empty strings
+                res = pd.Series([''] * len(s), index=s.index)
+                ok_mask = ~parsed_utc.isna()
+                if ok_mask.any():
+                    res.loc[ok_mask] = parsed_utc.loc[ok_mask].dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S')
+                # fallback for values that failed parsing as UTC: try naive parse
+                if (~ok_mask).any():
+                    parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
+                    if not parsed_naive.empty:
+                        # assume naive timestamps are in Sao_Paulo local time
+                        try:
+                            localized = parsed_naive.dt.tz_localize(tz)
+                            res.loc[~ok_mask] = localized.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                        except Exception:
+                            # if localization fails, format whatever could be parsed
+                            res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                sample_display['Revisado_em'] = res.fillna('')
             except Exception:
                 sample_display['Revisado_em'] = sample_display['Revisado_em'].fillna('').astype(str)
             # format prejuízo: we now use signed columns so negatives are shown (ML UI shows negative values)
@@ -1065,9 +1087,24 @@ def main():
                 export_df['Revisado'] = export_df['order_id'].apply(lambda oid: bool(reviews_map.get(str(oid), {}).get('reviewed', 0)))
                 export_df['Revisado_por'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
                 export_df['Revisado_em'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
-                # format exported review timestamp to local Brasilia time for readability
+                # robust formatting: prefer UTC-aware parsing then fallback to naive localization
                 try:
-                    export_df['Revisado_em'] = pd.to_datetime(export_df['Revisado_em'], utc=True, errors='coerce').dt.tz_convert('America/Sao_Paulo').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                    s = export_df['Revisado_em'].astype(object)
+                    parsed_utc = pd.to_datetime(s, utc=True, errors='coerce')
+                    tz = 'America/Sao_Paulo'
+                    res = pd.Series([''] * len(s), index=s.index)
+                    ok_mask = ~parsed_utc.isna()
+                    if ok_mask.any():
+                        res.loc[ok_mask] = parsed_utc.loc[ok_mask].dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S')
+                    if (~ok_mask).any():
+                        parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
+                        if not parsed_naive.empty:
+                            try:
+                                localized = parsed_naive.dt.tz_localize(tz)
+                                res.loc[~ok_mask] = localized.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                            except Exception:
+                                res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                    export_df['Revisado_em'] = res.fillna('')
                 except Exception:
                     pass
                 # add detail URL for each order so CSV consumers can open the sale detail directly
@@ -1098,7 +1135,22 @@ def main():
                 export_df['Revisado_por'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
                 export_df['Revisado_em'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
                 try:
-                    export_df['Revisado_em'] = pd.to_datetime(export_df['Revisado_em'], utc=True, errors='coerce').dt.tz_convert('America/Sao_Paulo').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                    s = export_df['Revisado_em'].astype(object)
+                    parsed_utc = pd.to_datetime(s, utc=True, errors='coerce')
+                    tz = 'America/Sao_Paulo'
+                    res = pd.Series([''] * len(s), index=s.index)
+                    ok_mask = ~parsed_utc.isna()
+                    if ok_mask.any():
+                        res.loc[ok_mask] = parsed_utc.loc[ok_mask].dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S')
+                    if (~ok_mask).any():
+                        parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
+                        if not parsed_naive.empty:
+                            try:
+                                localized = parsed_naive.dt.tz_localize(tz)
+                                res.loc[~ok_mask] = localized.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                            except Exception:
+                                res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                    export_df['Revisado_em'] = res.fillna('')
                 except Exception:
                     pass
                 # rename columns to Portuguese friendly names where possible
