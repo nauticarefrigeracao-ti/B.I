@@ -1086,7 +1086,7 @@ def main():
                 st.info('Nenhuma linha encontrada em `reviews` para este Order ID.')
 
             if not actions_raw.empty:
-                # converter created_at para fuso local antes de mostrar
+                # converter created_at para fuso local antes da exibição
                 actions_raw = _convert_ts_for_display(actions_raw, ts_cols='created_at')
                 st.write('Últimas ações registradas (tabela `actions`)')
                 st.dataframe(actions_raw)
@@ -1221,18 +1221,37 @@ def main():
 
 # Novo: converte colunas de timestamp (ISO/UTC) para America/Sao_Paulo para exibição
 def _convert_ts_for_display(df: pd.DataFrame, ts_cols):
+    """
+    Convert timestamp columns for display.
+    - If a value contains timezone info (Z or +/-offset) parse as UTC and convert to America/Sao_Paulo.
+    - If a value is naive, assume it is already in America/Sao_Paulo (do not shift).
+    """
     if df is None or df.empty:
         return df
     if isinstance(ts_cols, str):
         ts_cols = [ts_cols]
     for c in ts_cols:
-        if c in df.columns:
+        if c not in df.columns:
+            continue
+        s = df[c].astype(str)
+        aware_mask = s.str.contains(r'Z|[+\-]\d{2}:?\d{2}', regex=True, na=False)
+
+        # aware rows: parse as UTC and convert to São Paulo
+        if aware_mask.any():
             try:
-                # tenta interpretar como UTC-aware e converte para São Paulo
-                df[c] = pd.to_datetime(df[c], utc=True).dt.tz_convert("America/Sao_Paulo").dt.strftime("%Y-%m-%d %H:%M:%S")
+                df.loc[aware_mask, c] = pd.to_datetime(df.loc[aware_mask, c], utc=True).dt.tz_convert("America/Sao_Paulo").dt.strftime("%Y-%m-%d %H:%M:%S")
             except Exception:
-                # fallback tolerante: tenta parse sem forçar timezone
-                df[c] = pd.to_datetime(df[c], errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S")
+                df.loc[aware_mask, c] = pd.to_datetime(df.loc[aware_mask, c], errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S")
+
+        # naive rows: parse and LOCALIZE to São Paulo (assume they are already local)
+        if (~aware_mask).any():
+            try:
+                naive = pd.to_datetime(df.loc[~aware_mask, c], errors="coerce")
+                naive = naive.dt.tz_localize("America/Sao_Paulo")
+                df.loc[~aware_mask, c] = naive.dt.strftime("%Y-%m-%d %H:%M:%S")
+            except Exception:
+                df.loc[~aware_mask, c] = pd.to_datetime(df.loc[~aware_mask, c], errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S")
+
     return df
 
 if __name__ == '__main__':
