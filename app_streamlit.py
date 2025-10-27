@@ -562,10 +562,18 @@ def main():
 
 
     # prefer an explicit favicon if present
-    if favicon_path.exists():
-        st.markdown(f"<link rel=\"icon\" href=\"/assets/{favicon_path.name}\">", unsafe_allow_html=True)
-    elif favicon_gold.exists():
-        st.markdown(f"<link rel=\"icon\" href=\"/assets/{favicon_gold.name}\">", unsafe_allow_html=True)
+    try:
+        if favicon_path.exists() and favicon_path.stat().st_size > 0:
+            st.markdown(f"<link rel=\"icon\" href=\"/assets/{favicon_path.name}\">", unsafe_allow_html=True)
+        elif favicon_gold.exists() and favicon_gold.stat().st_size > 0:
+            st.markdown(f"<link rel=\"icon\" href=\"/assets/{favicon_gold.name}\">", unsafe_allow_html=True)
+        else:
+            # no-op: rely on page_icon passed to set_page_config (emoji fallback)
+            pass
+    except Exception:
+        # If anything goes wrong when trying to reference assets, avoid raising
+        # so the app can continue to run. The page_icon emoji is sufficient.
+        pass
 
     # Header: use a single flex HTML block so we can precisely position logo and centered title
     # Prefer serving the workspace asset 'logo_center_v2.svg' if present
