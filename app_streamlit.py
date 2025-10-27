@@ -400,11 +400,14 @@ def save_action(order_id: str, user: str, action: str, note: str):
 def main():
     # page config (favicon will be set after assets are resolved below)
     # --- DEBUG: quick visual check for header/logo rendering ---
+    # show the primary asset inline only if the file actually exists to avoid
+    # Streamlit registering a media id that may be missing in the runtime.
     try:
-        # show the primary asset inline to ensure Streamlit can render it
-        st.image(str(Path('assets') / '2.png'), width=120)
+        img_path = Path('assets') / '2.png'
+        if img_path.exists() and img_path.stat().st_size > 0:
+            st.image(str(img_path), width=120)
     except Exception:
-        # ignore if displaying inline images is not possible in the current runtime
+        # ignore any failure displaying inline images
         pass
     # brand/theme CSS polish (colors, spacing, table and buttons)
     st.markdown(f"""
