@@ -846,10 +846,11 @@ def main():
                 if (~ok_mask).any():
                     parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
                     if not parsed_naive.empty:
-                        # assume naive timestamps are in Sao_Paulo local time
+                        # Treat naive timestamps as UTC (we store in UTC). Localize to UTC then
+                        # convert to the display tz so server/clients see consistent local time.
                         try:
-                            localized = parsed_naive.dt.tz_localize(tz)
-                            res.loc[~ok_mask] = localized.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                            localized = parsed_naive.dt.tz_localize('UTC')
+                            res.loc[~ok_mask] = localized.dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
                         except Exception:
                             # if localization fails, format whatever could be parsed
                             res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
@@ -1148,8 +1149,9 @@ def main():
                         parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
                         if not parsed_naive.empty:
                             try:
-                                localized = parsed_naive.dt.tz_localize(tz)
-                                res.loc[~ok_mask] = localized.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                                # treat naive timestamps as UTC and convert to display tz
+                                localized = parsed_naive.dt.tz_localize('UTC')
+                                res.loc[~ok_mask] = localized.dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
                             except Exception:
                                 res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
                     export_df['Revisado_em'] = res.fillna('')
@@ -1194,8 +1196,9 @@ def main():
                         parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
                         if not parsed_naive.empty:
                             try:
-                                localized = parsed_naive.dt.tz_localize(tz)
-                                res.loc[~ok_mask] = localized.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                                # treat naive timestamps as UTC and convert to display tz
+                                localized = parsed_naive.dt.tz_localize('UTC')
+                                res.loc[~ok_mask] = localized.dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
                             except Exception:
                                 res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
                     export_df['Revisado_em'] = res.fillna('')
