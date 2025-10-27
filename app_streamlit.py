@@ -312,8 +312,26 @@ def set_review(order_id: str, reviewed: bool, user: str = 'operator', descriptio
     # Use REPLACE so we update existing rows; include review_description
     cur.execute('REPLACE INTO reviews (order_id, reviewed, reviewed_by, reviewed_at, review_description) VALUES (?,?,?,?,?)',
                 (order_id, 1 if reviewed else 0, user if reviewed else None, now if reviewed else None, description if reviewed else None))
-    con.commit()
-    con.close()
+    try:
+        con.commit()
+    except Exception as e:
+        # persist a small debug file to help diagnose write failures in prod
+        try:
+            with open('review_error.log', 'a', encoding='utf-8') as ef:
+                ef.write(f"Commit failed for set_review order_id={order_id} reviewed={reviewed} error={repr(e)}\n")
+        except Exception:
+            pass
+    finally:
+        con.close()
+    # Audit the action so we can trace whether reviews were attempted in prod
+    try:
+        save_action(order_id, user or 'operator', 'set_review', f'reviewed={1 if reviewed else 0} reviewed_at={now if reviewed else None}')
+    except Exception:
+        try:
+            with open('review_error.log', 'a', encoding='utf-8') as ef:
+                ef.write(f"save_action failed for order_id={order_id}\n")
+        except Exception:
+            pass
 
 
 def create_xlsx_export(df: pd.DataFrame, path: Path, display_names: dict):
