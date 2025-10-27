@@ -498,13 +498,22 @@ def main():
     favicon_gold = assets_dir / 'favicon_gold.png'
 
     # determine page favicon (prefer round SVG as favicon-like icon)
+    # NOTE: avoid passing a missing/invalid media id to Streamlit which can
+    # raise MediaFileStorageError in some deployment environments. Use a
+    # small emoji fallback when no workspace asset is present.
     page_favicon = None
-    if logo_round_path.exists():
-        page_favicon = str(logo_round_path)
-    elif favicon_path.exists():
-        page_favicon = str(favicon_path)
-    elif favicon_gold.exists():
-        page_favicon = str(favicon_gold)
+    try:
+        if logo_round_path.exists():
+            page_favicon = str(logo_round_path)
+        elif favicon_path.exists():
+            page_favicon = str(favicon_path)
+        elif favicon_gold.exists():
+            page_favicon = str(favicon_gold)
+        else:
+            # simple emoji is safe and won't trigger media file lookups
+            page_favicon = "📊"
+    except Exception:
+        page_favicon = "📊"
     st.set_page_config(page_title='BI Devoluções - Protótipo', layout='wide', page_icon=page_favicon)
 
     # Fallback: look for SVG logos in the user's design folder if not present in assets
