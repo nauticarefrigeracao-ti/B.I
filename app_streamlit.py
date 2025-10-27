@@ -1078,12 +1078,16 @@ def main():
 
             st.markdown('**Diagnóstico (raw) — reviews / actions para este Order ID**')
             if not review_raw.empty:
+                # converter reviewed_at para fuso local antes de mostrar
+                review_raw = _convert_ts_for_display(review_raw, ts_cols='reviewed_at')
                 st.write('Row raw em `reviews` (colunas: order_id, reviewed, reviewed_by, reviewed_at, review_description)')
                 st.dataframe(review_raw)
             else:
                 st.info('Nenhuma linha encontrada em `reviews` para este Order ID.')
 
             if not actions_raw.empty:
+                # converter created_at para fuso local antes de mostrar
+                actions_raw = _convert_ts_for_display(actions_raw, ts_cols='created_at')
                 st.write('Últimas ações registradas (tabela `actions`)')
                 st.dataframe(actions_raw)
             else:
@@ -1099,6 +1103,8 @@ def main():
         con.close()
         if not actions.empty:
             actions_display = actions.copy()
+            # converter created_at para fuso local (São Paulo) antes da exibição
+            actions_display = _convert_ts_for_display(actions_display, ts_cols='created_at')
             st.markdown(render_interactive_table(actions_display, table_id='actions_tbl'), unsafe_allow_html=True)
         else:
             st.info('Nenhuma ação registrada ainda.')
@@ -1212,6 +1218,22 @@ def main():
                     st.success(f'Export XLSX salvo em {out_x}')
                 else:
                     st.error('Erro ao salvar XLSX: ' + (err or ''))
+
+# Novo: converte colunas de timestamp (ISO/UTC) para America/Sao_Paulo para exibição
+def _convert_ts_for_display(df: pd.DataFrame, ts_cols):
+    if df is None or df.empty:
+        return df
+    if isinstance(ts_cols, str):
+        ts_cols = [ts_cols]
+    for c in ts_cols:
+        if c in df.columns:
+            try:
+                # tenta interpretar como UTC-aware e converte para São Paulo
+                df[c] = pd.to_datetime(df[c], utc=True).dt.tz_convert("America/Sao_Paulo").dt.strftime("%Y-%m-%d %H:%M:%S")
+            except Exception:
+                # fallback tolerante: tenta parse sem forçar timezone
+                df[c] = pd.to_datetime(df[c], errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S")
+    return df
 
 if __name__ == '__main__':
     main()
