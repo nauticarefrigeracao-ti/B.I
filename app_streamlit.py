@@ -1058,6 +1058,36 @@ def main():
             else:
                 st.info('Sem itens encontrados para este pedido.')
 
+            # --- Diagnostic: show raw review and action rows for this Order ID ---
+            try:
+                con2 = sqlite3.connect(DB_PATH)
+                try:
+                    review_raw = pd.read_sql('SELECT * FROM reviews WHERE order_id = ?', con2, params=(detail_id,))
+                except Exception:
+                    review_raw = pd.DataFrame()
+                try:
+                    actions_raw = pd.read_sql('SELECT * FROM actions WHERE order_id = ? ORDER BY id DESC LIMIT 20', con2, params=(detail_id,))
+                except Exception:
+                    actions_raw = pd.DataFrame()
+            finally:
+                try:
+                    con2.close()
+                except Exception:
+                    pass
+
+            st.markdown('**Diagnóstico (raw) — reviews / actions para este Order ID**')
+            if not review_raw.empty:
+                st.write('Row raw em `reviews` (colunas: order_id, reviewed, reviewed_by, reviewed_at, review_description)')
+                st.dataframe(review_raw)
+            else:
+                st.info('Nenhuma linha encontrada em `reviews` para este Order ID.')
+
+            if not actions_raw.empty:
+                st.write('Últimas ações registradas (tabela `actions`)')
+                st.dataframe(actions_raw)
+            else:
+                st.info('Nenhuma ação registrada para este Order ID.')
+
         st.markdown('---')
         st.subheader('Histórico de ações (últimas 50)')
         con = sqlite3.connect(DB_PATH)
