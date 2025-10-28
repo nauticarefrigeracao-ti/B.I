@@ -882,6 +882,13 @@ def main():
             sample_display['Revisado_por'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
             # assign raw value (may be ISO string or None)
             sample_display['Revisado_em'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
+            # bring the review textual description from reviews_map into the
+            # display DF so the 'Descrição' column in the table shows what was
+            # saved in the review form (matches the detail view behavior).
+            try:
+                sample_display['review_description'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('review_description') or '')
+            except Exception:
+                sample_display['review_description'] = ''
             # Convert the Revisado_em values to the same display format used in
             # the detailed view: parse the ISO/naive values and convert to
             # America/Sao_Paulo (UTC-3) using the centralized converter. This
