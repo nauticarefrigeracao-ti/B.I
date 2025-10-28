@@ -882,24 +882,15 @@ def main():
             sample_display['Revisado_por'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
             # assign raw value (may be ISO string or None)
             sample_display['Revisado_em'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
-            # Normalize the Revisado_em column with the centralized converter
-            # using a small temporary DF so conversion logic is consistent and
-            # doesn't depend on broader table dtypes. After conversion, ensure
-            # we have a non-null string for rendering.
+            # OPTION 1 (requested): show the raw backend timestamp in the
+            # table (ISO string) so the list view matches the detail view.
+            # Keep the change minimal: cast to string and fill missing values
+            # with an empty string. This avoids any tz conversion at list-level
+            # and is useful for a quick production test.
             try:
-                tmp = pd.DataFrame({'Revisado_em': sample_display['Revisado_em']})
-                tmp = _convert_ts_for_display(tmp, ts_cols='Revisado_em')
-                sample_display['Revisado_em'] = tmp['Revisado_em'].fillna('').astype(str)
-            except Exception:
                 sample_display['Revisado_em'] = sample_display['Revisado_em'].apply(lambda v: str(v) if pd.notna(v) else '')
-            # normalize review timestamp to the same display format as data_venda
-            try:
-                # Use the centralized converter to handle aware/naive mixes and
-                # any runtime tzdata issues consistently across the app.
-                sample_display = _convert_ts_for_display(sample_display, ts_cols='Revisado_em')
-                sample_display['Revisado_em'] = sample_display['Revisado_em'].fillna('')
             except Exception:
-                sample_display['Revisado_em'] = sample_display['Revisado_em'].fillna('').astype(str)
+                sample_display['Revisado_em'] = sample_display['Revisado_em'].astype(str).fillna('')
             # format prejuízo: we now use signed columns so negatives are shown (ML UI shows negative values)
             # prejuizo_real_signed and prejuizo_pendente_signed contain negative numbers when there's a loss
             if 'prejuizo_real_signed' in sample_display.columns:
