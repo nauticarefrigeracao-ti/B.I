@@ -183,20 +183,15 @@ def render_interactive_table(df, table_id='tbl'):
                 } else {
                     href = '?detail_id=' + encodeURIComponent(order);
                 }
-                // Send a postMessage to the parent window (the Streamlit
-                // app page). The parent runs a small listener (in the main
-                // app) which will perform the navigation there. This avoids
-                // sandbox/top-navigation restrictions in the iframe.
+                // Immediately open the target in a new tab. This avoids all
+                // iframe/top-navigation sandbox issues in hosting environments
+                // such as Streamlit Cloud where navigating the top window is
+                // blocked. Opening a new tab is the most reliable behavior.
                 try{
-                    var msg = { type: 'table_action', action: (btn.classList.contains('fill-btn') ? 'prefill' : 'detail'), order: order };
-                    if(window.parent && window.parent.postMessage){
-                        window.parent.postMessage(msg, '*');
-                        e.preventDefault();
-                        return;
-                    }
-                }catch(e){/* ignore */}
-                // Fallback: open in a new tab (most likely to work).
-                try{ window.open(href, '_blank'); }catch(e){}
+                    window.open(href, '_blank');
+                }catch(e){
+                    try{ window.location.href = href; }catch(e){}
+                }
                 e.preventDefault();
                 return;
             }
