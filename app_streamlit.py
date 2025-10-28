@@ -882,15 +882,17 @@ def main():
             sample_display['Revisado_por'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
             # assign raw value (may be ISO string or None)
             sample_display['Revisado_em'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
-            # OPTION 1 (requested): show the raw backend timestamp in the
-            # table (ISO string) so the list view matches the detail view.
-            # Keep the change minimal: cast to string and fill missing values
-            # with an empty string. This avoids any tz conversion at list-level
-            # and is useful for a quick production test.
+            # Convert the Revisado_em values to the same display format used in
+            # the detailed view: parse the ISO/naive values and convert to
+            # America/Sao_Paulo (UTC-3) using the centralized converter. This
+            # ensures list and detail show the same local time.
             try:
-                sample_display['Revisado_em'] = sample_display['Revisado_em'].apply(lambda v: str(v) if pd.notna(v) else '')
+                tmp = pd.DataFrame({'Revisado_em': sample_display['Revisado_em']})
+                tmp = _convert_ts_for_display(tmp, ts_cols='Revisado_em')
+                sample_display['Revisado_em'] = tmp['Revisado_em'].fillna('').astype(str)
             except Exception:
-                sample_display['Revisado_em'] = sample_display['Revisado_em'].astype(str).fillna('')
+                # fallback: ensure string type so the table doesn't break
+                sample_display['Revisado_em'] = sample_display['Revisado_em'].apply(lambda v: str(v) if pd.notna(v) else '')
             # format prejuízo: we now use signed columns so negatives are shown (ML UI shows negative values)
             # prejuizo_real_signed and prejuizo_pendente_signed contain negative numbers when there's a loss
             if 'prejuizo_real_signed' in sample_display.columns:
