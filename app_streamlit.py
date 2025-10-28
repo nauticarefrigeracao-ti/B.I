@@ -850,31 +850,10 @@ def main():
             sample_display['Revisado_em'] = sample_display['order_id'].apply(lambda oid: reviews.get(str(oid), {}).get('reviewed_at'))
             # normalize review timestamp to the same display format as data_venda
             try:
-                # Robust parsing for stored review timestamps:
-                # 1) try parsing as UTC-aware strings and convert to Sao_Paulo
-                # 2) for values that failed (NaT), try parsing as naive datetimes
-                #    and localize to America/Sao_Paulo (assume they were stored local)
-                s = sample_display['Revisado_em'].astype(object)
-                parsed_utc = pd.to_datetime(s, utc=True, errors='coerce')
-                tz = 'America/Sao_Paulo'
-                # initialize result series with empty strings
-                res = pd.Series([''] * len(s), index=s.index)
-                ok_mask = ~parsed_utc.isna()
-                if ok_mask.any():
-                    res.loc[ok_mask] = parsed_utc.loc[ok_mask].dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S')
-                # fallback for values that failed parsing as UTC: try naive parse
-                if (~ok_mask).any():
-                    parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
-                    if not parsed_naive.empty:
-                        # Treat naive timestamps as UTC (we store in UTC). Localize to UTC then
-                        # convert to the display tz so server/clients see consistent local time.
-                        try:
-                            localized = parsed_naive.dt.tz_localize('UTC')
-                            res.loc[~ok_mask] = localized.dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
-                        except Exception:
-                            # if localization fails, format whatever could be parsed
-                            res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
-                sample_display['Revisado_em'] = res.fillna('')
+                # Use the centralized converter to handle aware/naive mixes and
+                # any runtime tzdata issues consistently across the app.
+                sample_display = _convert_ts_for_display(sample_display, ts_cols='Revisado_em')
+                sample_display['Revisado_em'] = sample_display['Revisado_em'].fillna('')
             except Exception:
                 sample_display['Revisado_em'] = sample_display['Revisado_em'].fillna('').astype(str)
             # format prejuízo: we now use signed columns so negatives are shown (ML UI shows negative values)
@@ -1164,23 +1143,9 @@ def main():
                 export_df['Revisado_em'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
                 # robust formatting: prefer UTC-aware parsing then fallback to naive localization
                 try:
-                    s = export_df['Revisado_em'].astype(object)
-                    parsed_utc = pd.to_datetime(s, utc=True, errors='coerce')
-                    tz = 'America/Sao_Paulo'
-                    res = pd.Series([''] * len(s), index=s.index)
-                    ok_mask = ~parsed_utc.isna()
-                    if ok_mask.any():
-                        res.loc[ok_mask] = parsed_utc.loc[ok_mask].dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S')
-                    if (~ok_mask).any():
-                        parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
-                        if not parsed_naive.empty:
-                            try:
-                                # treat naive timestamps as UTC and convert to display tz
-                                localized = parsed_naive.dt.tz_localize('UTC')
-                                res.loc[~ok_mask] = localized.dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
-                            except Exception:
-                                res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
-                    export_df['Revisado_em'] = res.fillna('')
+                    # Centralized conversion (handles aware/naive values and runtime fallbacks)
+                    export_df = _convert_ts_for_display(export_df, ts_cols='Revisado_em')
+                    export_df['Revisado_em'] = export_df['Revisado_em'].fillna('')
                 except Exception:
                     pass
                 # add detail URL for each order so CSV consumers can open the sale detail directly
@@ -1211,23 +1176,8 @@ def main():
                 export_df['Revisado_por'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
                 export_df['Revisado_em'] = export_df['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
                 try:
-                    s = export_df['Revisado_em'].astype(object)
-                    parsed_utc = pd.to_datetime(s, utc=True, errors='coerce')
-                    tz = 'America/Sao_Paulo'
-                    res = pd.Series([''] * len(s), index=s.index)
-                    ok_mask = ~parsed_utc.isna()
-                    if ok_mask.any():
-                        res.loc[ok_mask] = parsed_utc.loc[ok_mask].dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S')
-                    if (~ok_mask).any():
-                        parsed_naive = pd.to_datetime(s.loc[~ok_mask], errors='coerce')
-                        if not parsed_naive.empty:
-                            try:
-                                # treat naive timestamps as UTC and convert to display tz
-                                localized = parsed_naive.dt.tz_localize('UTC')
-                                res.loc[~ok_mask] = localized.dt.tz_convert(tz).dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
-                            except Exception:
-                                res.loc[~ok_mask] = parsed_naive.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
-                    export_df['Revisado_em'] = res.fillna('')
+                    export_df = _convert_ts_for_display(export_df, ts_cols='Revisado_em')
+                    export_df['Revisado_em'] = export_df['Revisado_em'].fillna('')
                 except Exception:
                     pass
                 # rename columns to Portuguese friendly names where possible
@@ -1296,11 +1246,19 @@ def _convert_ts_for_display(df: pd.DataFrame, ts_cols):
             # Finally, convert all tz-aware times to America/Sao_Paulo and
             # format for display. Any remaining NaT values become empty strings.
             try:
+                # Preferred: convert tz-aware series to America/Sao_Paulo
                 converted = parsed.dt.tz_convert('America/Sao_Paulo')
                 df[c] = converted.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
             except Exception:
-                # best-effort fallback: try formatting without tz conversion
-                df[c] = parsed.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                # If tz conversion fails (for example tzdata not available in the
+                # runtime), fall back to a safe manual shift: interpret values as
+                # UTC then subtract 3 hours to approximate America/Sao_Paulo.
+                try:
+                    shifted = parsed.dt.tz_convert('UTC') - pd.Timedelta(hours=3)
+                    df[c] = shifted.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                except Exception:
+                    # Last resort: format whatever could be parsed as naive
+                    df[c] = pd.to_datetime(df[c], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
         except Exception:
             # Last resort: fallback to naive parse and string formatting
             try:

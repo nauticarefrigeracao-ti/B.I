@@ -1,0 +1,53 @@
+FIX: instruções rápidas para corrigir exibição de timestamps (NAIVE timestamps)
+
+Resumo objetivo
+- Problema: timestamps "ingênuos" (sem offset) estão sendo interpretados de forma errada em produção, resultando em horas adiantadas (diferença de ~3h).
+- Solução imediata e não destrutiva: fazer a aplicação interpretar timestamps ingênuos como UTC ao exibir. Evita tocar nos dados e corrige o sintoma imediatamente.
+
+Ação recomendada (rápida, segura)
+1) No painel do host (Streamlit Cloud ou outro), defina a variável de ambiente:
+   Nome: NAIVE_TIMESTAMP_INTERPRETATION
+   Valor: UTC
+2) Salve e force um redeploy / restart da app.
+Resultado esperado: a app irá interpretar strings sem timezone como UTC e irá convertê-las para America/Sao_Paulo no momento de exibir.
+
+Comandos PowerShell (se você quiser aplicar manualmente no host)
+- Checar/definir env var (exemplo para Streamlit Cloud: via UI de Environment variables). Se estiver num servidor com PowerShell e usar systemd/container, ajuste conforme seu ambiente.
+
+Corrigir o registro de um único Order ID (opcional, se preferir normalizar dados ao invés de apenas ajustar a interpretação)
+- Há um script no repositório: scripts/fix_review_ts_order.py
+- Dry-run (não altera dados, só mostra o que faria):
+  python .\scripts\fix_review_ts_order.py 2000009653451003 --backup
+- Aplicar a mudança (cria backup e atualiza apenas essa linha):
+  python .\scripts\fix_review_ts_order.py 2000009653451003 --backup --apply
+
+Observação: o script apenas acrescenta "+00:00" ao final do campo `reviewed_at` quando este não possui um offset, tornando-o um timestamp UTC-aware.
+
+SQL alternativo (se preferir usar sqlite3 CLI no host)
+- Backup (copiar o arquivo):
+  Copy-Item .\ml_devolucoes.db .\ml_devolucoes.db.bak_before_fix -Force
+- Atualizar uma linha específica:
+  -- (necessita do sqlite3 CLI instalado)
+  sqlite3 .\ml_devolucoes.db "UPDATE reviews SET reviewed_at = reviewed_at || '+00:00' WHERE order_id = '2000009653451003' AND reviewed_at NOT LIKE '%+%' AND reviewed_at NOT LIKE '%-%';"
+- Atualizar todas as linhas ingênuas (use com cautela, faça backup primeiro):
+  sqlite3 .\ml_devolucoes.db "UPDATE reviews SET reviewed_at = reviewed_at || '+00:00' WHERE reviewed_at IS NOT NULL AND reviewed_at NOT LIKE '%+%' AND reviewed_at NOT LIKE '%-%';"
+
+Como verificar (local/host)
+- Scripts úteis que já estão no repositório:
+  - scripts/check_single_review.py <ORDER_ID>
+    -> Mostra a linha RAW e como o app atual a converte para display.
+  - scripts/check_reviews_display.py
+    -> Mostra as últimas linhas e o resultado da conversão para America/Sao_Paulo.
+
+Como reverter
+- Se usar o script com --backup ou se copiar manualmente o arquivo .db, restaure a partir do backup:
+  Copy-Item .\ml_devolucoes.db.bak_before_fix .\ml_devolucoes.db -Force
+
+Notas finais
+- Minha recomendação imediata: primeiro defina a env var NAIVE_TIMESTAMP_INTERPRETATION=UTC e reinicie a app (rápido, sem tocar dados). Se quiser uma correção permanente nos dados, use o script para um único Order ID ou normalize todas as linhas durante uma janela com backup.
+- O repositório já contém os scripts mencionados (scripts/fix_review_ts_order.py, scripts/check_single_review.py, scripts/check_reviews_display.py).
+
+Salvo em: FIX_TIMESTAMP_INSTRUCTIONS.txt
+Data: 2025-10-27
+
+Se quiser, amanhã eu continuo e automatizo a migração em um branch separado ou adiciono o botão admin seguro na UI para aplicar correções pontuais sem ter que acessar o host.
