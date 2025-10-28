@@ -51,14 +51,15 @@ def render_interactive_table(df, table_id='tbl'):
         order_col_name = next(col for col in df2.columns if col.lower() == 'order id')
         df2[order_col_name] = df2[order_col_name].fillna('').astype(str).apply(
                 # Build a compact action group: main link to MercadoLivre detail (opens in new tab),
-                # and two simple anchor links that open a new tab with a prefilled
-                # query param to prefill the review form or to open the detail view.
-                # Avoid client-side scripts so this works in hosted runtimes.
+                # a copy button, a button that navigates the top window to prefill the review form,
+                # and a button that navigates the top window to open the detail view inside the app.
                 lambda oid: (
                     (f'<a href="https://www.mercadolivre.com.br/vendas/{html.escape(oid)}/detalhe" target="_blank" rel="noopener noreferrer">{html.escape(oid)}</a>' if oid else '')
                           + (f' <span class="row-actions">'
-                              f'<a class="fill-link" href="?prefill_order_id={html.escape(oid)}" target="_blank" rel="noopener noreferrer" title="Preencher formulário">↪️</a>'
-                              f'<a class="open-detail" href="?detail_id={html.escape(oid)}" target="_blank" rel="noopener noreferrer" title="Abrir detalhe" style="margin-left:6px;">🔎</a>'
+                              f'<button class="copy-btn" data-order="{html.escape(oid)}" title="Copiar Order ID">📋</button>'
+                              # Use buttons with data-order so JS can construct query params reliably
+                              f'<button class="fill-btn" data-order="{html.escape(oid)}" title="Preencher formulário">↪️</button>'
+                              f'<button class="open-detail" data-order="{html.escape(oid)}" title="Abrir detalhe">🔎</button>'
                               f'</span>')
                 ) if oid else ''
             )
@@ -136,11 +137,70 @@ def render_interactive_table(df, table_id='tbl'):
     # interactivity is required later, we should move to a supported Streamlit
     # component (ag-grid / st-aggrid) or serve a small separate static page.
     safe = css_block + f'<div class="interactive-card" style="max-height:520px; overflow:auto">{html_table}</div>'
-    # Return the safe HTML (no inline scripts). Avoid injecting <script>
-    # into the rendered content to prevent sandbox/feature-policy warnings
-    # and repeated network activity in hosted environments. If richer
-    # client-side behavior is required later, prefer a proper Streamlit
-    # component or a separate static page served by the app.
+    # Small script to enable copying Order IDs to clipboard inside the
+    # rendered HTML table. This keeps behavior self-contained in the
+    # components HTML and avoids requiring external JS libs.
+    script = '''
+    <script>
+    (function(){
+        function handleActionClick(e){
+            var el = e.target;
+            var btn = (el.closest && (el.closest('.copy-btn') || el.closest('.fill-btn') || el.closest('.open-detail'))) || null;
+            if(!btn){
+                // also check if the target itself is a matching element
+                if(el.classList && (el.classList.contains('copy-btn') || el.classList.contains('fill-btn') || el.classList.contains('open-detail'))){
+                    btn = el;
+                } else {
+                    return;
+                }
+            }
+            // COPY action
+            if(btn.classList.contains('copy-btn')){
+                var order = btn.getAttribute('data-order') || '';
+                try{
+                    if(navigator && navigator.clipboard && navigator.clipboard.writeText){
+                        navigator.clipboard.writeText(order);
+                        var orig = btn.innerHTML;
+                        btn.innerHTML = '✔';
+                        setTimeout(function(){ try{ btn.innerHTML = orig; }catch(e){} }, 900);
+                    } else {
+                        window.prompt('Copiar Order ID (Ctrl+C, Enter):', order);
+                    }
+                }catch(err){
+                    try{ window.prompt('Copiar Order ID (Ctrl+C, Enter):', order); }catch(e){}
+                }
+                e.preventDefault();
+                return;
+            }
+            // PREFILL / OPEN DETAIL actions: navigate the top window so the page reloads with the query param
+            if(btn.classList.contains('fill-btn') || btn.classList.contains('open-detail')){
+                // Build the query param URL from data-order so this works regardless
+                // of whether the element is an anchor or a button and works inside iframes.
+                var order = btn.getAttribute('data-order') || '';
+                var href = '';
+                if(btn.classList.contains('fill-btn')){
+                    href = '?prefill_order_id=' + encodeURIComponent(order);
+                } else {
+                    href = '?detail_id=' + encodeURIComponent(order);
+                }
+                // Immediately open the target in a new tab. This avoids all
+                // iframe/top-navigation sandbox issues in hosting environments
+                // such as Streamlit Cloud where navigating the top window is
+                // blocked. Opening a new tab is the most reliable behavior.
+                try{
+                    window.open(href, '_blank');
+                }catch(e){
+                    try{ window.location.href = href; }catch(e){}
+                }
+                e.preventDefault();
+                return;
+            }
+        }
+        document.addEventListener('click', handleActionClick);
+    })();
+    </script>
+    '''
+    safe = safe + script
     return safe
 
 DB_PATH = Path('ml_devolucoes.db')
@@ -694,11 +754,28 @@ def main():
     )
     st.markdown(header_html, unsafe_allow_html=True)
 
-    # Note: we intentionally avoid injecting any parent-side postMessage
-    # listeners or scripts. These can trigger sandbox/feature-policy warnings
-    # in hosted environments and may cause repeated XHR logs. Per-row
-    # actions will use simple anchor links that open in a new tab where
-    # appropriate, which is reliable across runtimes.
+    # Parent-side listener to handle navigation requests from the interactive
+    # table's iframe (sent via postMessage). This allows the iframe to ask
+    # the main page to navigate without triggering sandboxed top-navigation
+    # errors. The listener builds the query string and assigns window.location
+    # so Streamlit reloads the app with the requested params.
+    parent_nav_js = '''
+    <script>
+    (function(){
+        window.addEventListener('message', function(ev){
+            try{
+                var d = ev.data;
+                if(!d || d.type !== 'table_action') return;
+                var order = d.order || '';
+                var href = (d.action === 'prefill') ? ('?prefill_order_id=' + encodeURIComponent(order)) : ('?detail_id=' + encodeURIComponent(order));
+                // Navigate the main window to the constructed URL
+                window.location.href = href;
+            }catch(e){ /* ignore */ }
+        }, false);
+    })();
+    </script>
+    '''
+    st.markdown(parent_nav_js, unsafe_allow_html=True)
 
     months = get_months()
     col1, col2, col3 = st.columns([2,2,1])
@@ -1045,11 +1122,12 @@ def main():
             sample_display = sample
 
         # render interactive table using client-side DataTables (no pyarrow required)
-        # Render the table HTML directly via st.markdown with unsafe HTML
-        # enabled. Avoid using components.html which creates an iframe and can
-        # trigger sandbox/feature warnings or extra network activity in some
-        # hosting environments. The rendered HTML is intentionally script-free.
-        st.markdown(render_interactive_table(sample_display, table_id='sample_tbl'), unsafe_allow_html=True)
+        try:
+            import streamlit.components.v1 as components
+            html_snippet = render_interactive_table(sample_display, table_id='sample_tbl')
+            components.html(html_snippet, height=540)
+        except Exception:
+            st.markdown(render_interactive_table(sample_display, table_id='sample_tbl'), unsafe_allow_html=True)
 
         # Copy-visible-order-ids helper: collect the Order IDs currently shown
         # in the sample_display and offer a one-click copy button. If the
@@ -1070,23 +1148,37 @@ def main():
             copy_col1, copy_col2 = st.columns([1,3])
             with copy_col1:
                 if st.button('Copiar Order IDs visíveis'):
-                    # For reliability in hosted environments we avoid injecting
-                    # JS for clipboard access. Instead, show a textarea with the
-                    # Order IDs so the operator can copy them manually (Ctrl+C).
-                    st.text_area('Order IDs (copie manualmente)', value=oids_text, height=120)
+                    # small JS snippet to copy to clipboard. If the environment
+                    # blocks clipboard access, show the textarea below instead.
+                    # Build a JSON-escaped JS string to safely embed newlines/quotes
+                    import json as _json
+                    safe_js_text = _json.dumps(oids_text)
+                    js = (
+                        '<script>'
+                        'try{'
+                        '  const text = ' + safe_js_text + ';'
+                        '  if(navigator && navigator.clipboard && navigator.clipboard.writeText){'
+                        '    navigator.clipboard.writeText(text).then(function(){ /* copied */ }, function(){ window.prompt("Copiar Order IDs (Ctrl+C, Enter):", text); });'
+                        '  } else {'
+                        '    window.prompt("Copiar Order IDs (Ctrl+C, Enter):", text);'
+                        '  }'
+                        '}catch(e){ window.prompt("Copiar Order IDs (Ctrl+C, Enter):", ' + safe_js_text + '); }'
+                        '</script>'
+                    )
+                    try:
+                        components.html(js, height=10)
+                    except Exception:
+                        # Fallback: show the IDs in a textarea for manual copy
+                        st.text_area('Order IDs (copie manualmente)', value=oids_text, height=120)
             with copy_col2:
                 st.caption('IDs mostrados na tabela acima. Use o botão para copiar todos os Order IDs exibidos (um por linha).')
 
         # Read query params so action buttons that navigate to ?prefill_order_id=... or
         # ?detail_id=... can prefill the review form or open details without copy/paste.
         try:
-            # st.query_params is the non-experimental API returning a dict of lists
-            _qp = st.query_params
+            _qp = st.experimental_get_query_params()
         except Exception:
-            try:
-                _qp = st.experimental_get_query_params()
-            except Exception:
-                _qp = {}
+            _qp = {}
         prefill_order = _qp.get('prefill_order_id', [None])[0] if _qp else None
         detail_prefill = _qp.get('detail_id', [None])[0] if _qp else None
 
