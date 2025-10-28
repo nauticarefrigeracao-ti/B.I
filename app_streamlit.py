@@ -1257,8 +1257,16 @@ def _convert_ts_for_display(df: pd.DataFrame, ts_cols):
                 # If tz conversion fails (for example tzdata not available in the
                 # runtime), fall back to a safe manual shift: interpret values as
                 # UTC then subtract 3 hours to approximate America/Sao_Paulo.
+                # Some minimal Python runtimes (e.g. musl builds or stripped
+                # containers) may not include full tzdata and tz_convert calls
+                # can raise. In that case, avoid relying on tz-aware ops and
+                # perform a best-effort manual shift: parse as naive datetimes
+                # (interpreting them as UTC) and subtract 3 hours.
                 try:
-                    shifted = parsed.dt.tz_convert('UTC') - pd.Timedelta(hours=3)
+                    # Try a safe manual path that does not require tzdata: parse
+                    # the original strings as naive datetimes and shift -3h.
+                    naive = pd.to_datetime(s, errors='coerce')
+                    shifted = naive - pd.Timedelta(hours=3)
                     df[c] = shifted.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
                 except Exception:
                     # Last resort: format whatever could be parsed as naive
