@@ -38,13 +38,12 @@ def render_interactive_table(df, table_id='tbl'):
         # find the actual column name for order id after normalization
         oid_col = next(col for col in df2.columns if col.lower() == 'order id')
         for i, oid in enumerate(df2[oid_col].fillna('').astype(str), start=1):
-            btn = f'<button class="copy-btn" data-order="{html.escape(oid)}" title="Copiar Order ID">📋</button>'
-            # Keep the index number for identification/organization, but do
-            # NOT make it a link (the Order ID column already links to the
-            # Mercado Livre detail). Render as plain text to avoid redundancy
-            # and any iframe navigation side-effects.
+            # Keep the index number for identification/organization. We used
+            # to render a gold copy button here but it's redundant with the
+            # copy action included in the Order ID column. Remove it to save
+            # horizontal space.
             idx_html = f'<span class="row-index" title="Linha {i}">{i}</span>'
-            html_idx.append(btn + ' ' + idx_html)
+            html_idx.append(idx_html)
         df2['#'] = html_idx
 
     # Make the Order ID itself a clickable link to Mercado Livre detail page so the full ID is visible and can be opened
@@ -56,11 +55,12 @@ def render_interactive_table(df, table_id='tbl'):
                 # and a button that navigates the top window to open the detail view inside the app.
                 lambda oid: (
                     (f'<a href="https://www.mercadolivre.com.br/vendas/{html.escape(oid)}/detalhe" target="_blank" rel="noopener noreferrer">{html.escape(oid)}</a>' if oid else '')
-                    + (f' <span class="row-actions">'
-                       f'<button class="copy-btn" data-order="{html.escape(oid)}" title="Copiar Order ID">📋</button>'
-                       f'<a class="fill-btn" href="?prefill_order_id={html.escape(oid)}" target="_top" title="Preencher formulário">↪️</a>'
-                       f'<a class="open-detail" href="?detail_id={html.escape(oid)}" target="_top" title="Abrir detalhe">🔎</a>'
-                       f'</span>')
+                          + (f' <span class="row-actions">'
+                              f'<button class="copy-btn" data-order="{html.escape(oid)}" title="Copiar Order ID">📋</button>'
+                              # Use buttons with data-order so JS can construct query params reliably
+                              f'<button class="fill-btn" data-order="{html.escape(oid)}" title="Preencher formulário">↪️</button>'
+                              f'<button class="open-detail" data-order="{html.escape(oid)}" title="Abrir detalhe">🔎</button>'
+                              f'</span>')
                 ) if oid else ''
             )
 
@@ -82,14 +82,18 @@ def render_interactive_table(df, table_id='tbl'):
     #{table_id} thead th {{ background: var(--brand-900); color: #fff; font-weight:700; }}
     #{table_id} tbody tr:nth-child(odd) td {{ background:#fbfbff; }}
     #{table_id} tbody tr:hover td {{ background: #f3f6f9; }}
-    #{table_id} td:nth-child(2), #{table_id} thead th:nth-child(2) {{ max-width: 300px; white-space: normal; word-break: break-word; overflow-wrap: anywhere; text-align: left; }}
-    /* small action button style (non-functional without JS) */
-    #{table_id} .copy-btn {{ background:var(--gold); color:var(--brand-900); border:none; padding:6px 8px; border-radius:6px; margin-right:6px; }}
-    #{table_id} .row-actions {{ display:inline-flex; gap:6px; margin-left:8px; vertical-align:middle; }}
+     /* Order ID column: keep link on its own line and show the 3 action buttons below it
+         without extra horizontal space. Make the link block-level and the actions a
+         compact inline-flex row. Reduce padding so the cell fits tightly to content. */
+     #{table_id} thead th:nth-child(2), #{table_id} td:nth-child(2) {{ max-width: 220px; white-space: normal; text-align: left; padding:6px 6px; }}
+     #{table_id} td:nth-child(2) a {{ display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }}
+    /* small action button style (compact) */
+    #{table_id} .copy-btn {{ background:var(--gold); color:var(--brand-900); border:none; padding:4px 6px; border-radius:6px; margin-right:4px; font-size:12px; }}
+    #{table_id} .row-actions {{ display:inline-flex; gap:4px; margin-top:4px; vertical-align:middle; align-items:center; }}
     #{table_id} .row-actions .copy-btn, #{table_id} .row-actions .fill-btn, #{table_id} .row-actions .open-detail {{
-        background: transparent; border: 1px solid rgba(0,0,0,0.06); padding:4px 6px; border-radius:6px; font-size:12px; cursor:pointer; text-decoration:none; color:var(--brand-900);
+        background: transparent; border: 1px solid rgba(0,0,0,0.06); padding:3px 6px; border-radius:6px; font-size:12px; cursor:pointer; text-decoration:none; color:var(--brand-900);
     }}
-    #{table_id} .row-actions .copy-btn:hover {{ background: rgba(0,0,0,0.04); }}
+    #{table_id} .row-actions .copy-btn:hover, #{table_id} .row-actions .fill-btn:hover, #{table_id} .row-actions .open-detail:hover {{ background: rgba(0,0,0,0.04); }}
     .interactive-card {{ background: transparent; padding: 6px; }}
     /* Ensure any textarea or input auto-generated by pandas/streamlit inside
        our table remains visible: some runtimes/styles render these with
@@ -132,17 +136,26 @@ def render_interactive_table(df, table_id='tbl'):
     # and 'Unrecognized feature' warnings from the browser. If richer client-side
     # interactivity is required later, we should move to a supported Streamlit
     # component (ag-grid / st-aggrid) or serve a small separate static page.
-        safe = css_block + f'<div class="interactive-card" style="max-height:520px; overflow:auto">{html_table}</div>'
-        # Small script to enable copying Order IDs to clipboard inside the
-        # rendered HTML table. This keeps behavior self-contained in the
-        # components HTML and avoids requiring external JS libs.
-        script = '''
-        <script>
-        (function(){
-            function onCopyClick(e){
-                var el = e.target;
-                var btn = el.closest && el.closest('.copy-btn') ? el.closest('.copy-btn') : (el.classList && el.classList.contains('copy-btn') ? el : null);
-                if(!btn) return;
+    safe = css_block + f'<div class="interactive-card" style="max-height:520px; overflow:auto">{html_table}</div>'
+    # Small script to enable copying Order IDs to clipboard inside the
+    # rendered HTML table. This keeps behavior self-contained in the
+    # components HTML and avoids requiring external JS libs.
+    script = '''
+    <script>
+    (function(){
+        function handleActionClick(e){
+            var el = e.target;
+            var btn = (el.closest && (el.closest('.copy-btn') || el.closest('.fill-btn') || el.closest('.open-detail'))) || null;
+            if(!btn){
+                // also check if the target itself is a matching element
+                if(el.classList && (el.classList.contains('copy-btn') || el.classList.contains('fill-btn') || el.classList.contains('open-detail'))){
+                    btn = el;
+                } else {
+                    return;
+                }
+            }
+            // COPY action
+            if(btn.classList.contains('copy-btn')){
                 var order = btn.getAttribute('data-order') || '';
                 try{
                     if(navigator && navigator.clipboard && navigator.clipboard.writeText){
@@ -156,13 +169,44 @@ def render_interactive_table(df, table_id='tbl'):
                 }catch(err){
                     try{ window.prompt('Copiar Order ID (Ctrl+C, Enter):', order); }catch(e){}
                 }
+                e.preventDefault();
+                return;
             }
-            document.addEventListener('click', onCopyClick);
-        })();
-        </script>
-        '''
-        safe = safe + script
-        return safe
+            // PREFILL / OPEN DETAIL actions: navigate the top window so the page reloads with the query param
+            if(btn.classList.contains('fill-btn') || btn.classList.contains('open-detail')){
+                // Build the query param URL from data-order so this works regardless
+                // of whether the element is an anchor or a button and works inside iframes.
+                var order = btn.getAttribute('data-order') || '';
+                var href = '';
+                if(btn.classList.contains('fill-btn')){
+                    href = '?prefill_order_id=' + encodeURIComponent(order);
+                } else {
+                    href = '?detail_id=' + encodeURIComponent(order);
+                }
+                // Send a postMessage to the parent window (the Streamlit
+                // app page). The parent runs a small listener (in the main
+                // app) which will perform the navigation there. This avoids
+                // sandbox/top-navigation restrictions in the iframe.
+                try{
+                    var msg = { type: 'table_action', action: (btn.classList.contains('fill-btn') ? 'prefill' : 'detail'), order: order };
+                    if(window.parent && window.parent.postMessage){
+                        window.parent.postMessage(msg, '*');
+                        e.preventDefault();
+                        return;
+                    }
+                }catch(e){/* ignore */}
+                // Fallback: open in a new tab (most likely to work).
+                try{ window.open(href, '_blank'); }catch(e){}
+                e.preventDefault();
+                return;
+            }
+        }
+        document.addEventListener('click', handleActionClick);
+    })();
+    </script>
+    '''
+    safe = safe + script
+    return safe
 
 DB_PATH = Path('ml_devolucoes.db')
 
@@ -715,6 +759,29 @@ def main():
     )
     st.markdown(header_html, unsafe_allow_html=True)
 
+    # Parent-side listener to handle navigation requests from the interactive
+    # table's iframe (sent via postMessage). This allows the iframe to ask
+    # the main page to navigate without triggering sandboxed top-navigation
+    # errors. The listener builds the query string and assigns window.location
+    # so Streamlit reloads the app with the requested params.
+    parent_nav_js = '''
+    <script>
+    (function(){
+        window.addEventListener('message', function(ev){
+            try{
+                var d = ev.data;
+                if(!d || d.type !== 'table_action') return;
+                var order = d.order || '';
+                var href = (d.action === 'prefill') ? ('?prefill_order_id=' + encodeURIComponent(order)) : ('?detail_id=' + encodeURIComponent(order));
+                // Navigate the main window to the constructed URL
+                window.location.href = href;
+            }catch(e){ /* ignore */ }
+        }, false);
+    })();
+    </script>
+    '''
+    st.markdown(parent_nav_js, unsafe_allow_html=True)
+
     months = get_months()
     col1, col2, col3 = st.columns([2,2,1])
     with col1:
@@ -1148,42 +1215,42 @@ def main():
     # allow pre-filling the detail id via ?detail_id=ORDERID so the open-detail
     # action from the table can navigate here and show the detail immediately.
     detail_id = st.text_input('Abrir detalhe por Order ID (cole aqui)', value=str(detail_prefill) if detail_prefill else '')
-        if detail_id:
-            con = sqlite3.connect(DB_PATH)
-            try:
-                od = pd.read_sql('SELECT * FROM orders WHERE order_id = ?', con, params=(detail_id,))
-                oi = pd.read_sql('SELECT * FROM order_items WHERE order_id = ?', con, params=(detail_id,))
-            except Exception:
-                od = pd.DataFrame()
-                oi = pd.DataFrame()
-            con.close()
-            st.markdown('**Resumo (visão ML-like)**')
-            if not od.empty:
-                o = od.iloc[0]
-                # Build a breakdown similar to the Mercado Livre detail panel
-                breakdown = {
-                    'Preço do produto': o.get('receita_produtos_brl', 0.0),
-                    'Tarifa de venda total': o.get('tarifa_venda_impostos_brl', 0.0),
-                    'Tarifas de envio': o.get('tarifas_envio_brl', 0.0),
-                    'Cancelamentos e reembolsos': o.get('cancelamentos_reembolsos_brl', 0.0),
-                    'Dinheiro liberado': o.get('dinheiro_liberado', 0.0),
-                    'Total (nosso calculado)': o.get('total_brl', 0.0)
-                }
-                # pretty print the breakdown
-                for k, v in breakdown.items():
-                    if v is None:
-                        s = ''
-                    else:
-                        s = fmt_brl_signed(v)
-                    st.write(f"{k}: ", s)
-                # show internal pending heuristics inside a collapsed section with
-                # an explicit explanation so users don't mistake it for the ML "Total"
-                with st.expander('Valores internos (debug): _valor_pendente / _valor_passivel_extorno'):
-                    st.write('Estes valores são heurísticos internos sobre possíveis estornos/pendências. Não representam o "Total/Prejuízo" mostrado no painel do Mercado Livre.')
-                    st.write('_valor_pendente:', fmt_brl(o.get('_valor_pendente', 0.0)))
-                    st.write('_valor_passivel_extorno:', fmt_brl(o.get('_valor_passivel_extorno', 0.0)))
-            else:
-                st.info('Pedido não encontrado na tabela `orders`.')
+    if detail_id:
+        con = sqlite3.connect(DB_PATH)
+        try:
+            od = pd.read_sql('SELECT * FROM orders WHERE order_id = ?', con, params=(detail_id,))
+            oi = pd.read_sql('SELECT * FROM order_items WHERE order_id = ?', con, params=(detail_id,))
+        except Exception:
+            od = pd.DataFrame()
+            oi = pd.DataFrame()
+        con.close()
+        st.markdown('**Resumo (visão ML-like)**')
+        if not od.empty:
+            o = od.iloc[0]
+            # Build a breakdown similar to the Mercado Livre detail panel
+            breakdown = {
+                'Preço do produto': o.get('receita_produtos_brl', 0.0),
+                'Tarifa de venda total': o.get('tarifa_venda_impostos_brl', 0.0),
+                'Tarifas de envio': o.get('tarifas_envio_brl', 0.0),
+                'Cancelamentos e reembolsos': o.get('cancelamentos_reembolsos_brl', 0.0),
+                'Dinheiro liberado': o.get('dinheiro_liberado', 0.0),
+                'Total (nosso calculado)': o.get('total_brl', 0.0)
+            }
+            # pretty print the breakdown
+            for k, v in breakdown.items():
+                if v is None:
+                    s = ''
+                else:
+                    s = fmt_brl_signed(v)
+                st.write(f"{k}: ", s)
+            # show internal pending heuristics inside a collapsed section with
+            # an explicit explanation so users don't mistake it for the ML "Total"
+            with st.expander('Valores internos (debug): _valor_pendente / _valor_passivel_extorno'):
+                st.write('Estes valores são heurísticos internos sobre possíveis estornos/pendências. Não representam o "Total/Prejuízo" mostrado no painel do Mercado Livre.')
+                st.write('_valor_pendente:', fmt_brl(o.get('_valor_pendente', 0.0)))
+                st.write('_valor_passivel_extorno:', fmt_brl(o.get('_valor_passivel_extorno', 0.0)))
+        else:
+            st.info('Pedido não encontrado na tabela `orders`.')
             st.markdown('**Linha consolidada (orders)**')
             if not od.empty:
                 st.json(od.to_dict(orient='records')[0])
