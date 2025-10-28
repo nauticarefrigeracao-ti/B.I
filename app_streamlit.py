@@ -98,6 +98,18 @@ def render_interactive_table(df, table_id='tbl'):
         pointer-events: auto !important;
         overflow: visible !important;
     }}
+    /* Description cell: truncate long review descriptions visually with
+       ellipsis, but keep full text in the title attribute for hover tooltip. */
+    #{table_id} .desc-cell {{
+        display: inline-block;
+        max-width: 420px; /* reasonable max so table doesn't break */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        text-align: left;
+        padding: 2px 4px;
+    }}
     </style>
     """
 
@@ -943,11 +955,30 @@ def main():
                     view_cols.append(extra)
             # add the textual description (use review_description from reviews table if present)
             # we'll map it to the 'Descrição' column later and place it last
+            # Build the display-friendly 'Descrição' column. Prefer the
+            # review_description stored in the reviews table; if absent,
+            # fall back to the resultado column. To avoid breaking the
+            # table layout when descriptions are long, truncate the
+            # visible text to 100 characters and render an HTML element
+            # with a tooltip (title) that contains the full text.
+            def _make_desc_cell(val, limit=100):
+                try:
+                    s = '' if val is None else str(val)
+                except Exception:
+                    s = ''
+                full_esc = html.escape(s)
+                if len(s) > limit:
+                    short = html.escape(s[:limit].rstrip()) + '...'
+                else:
+                    short = full_esc
+                # use a div with class desc-cell so CSS can ellipsize it
+                return f"<div class='desc-cell' title=\"{full_esc}\">{short}</div>"
+
             if 'review_description' in sample_display.columns:
-                sample_display['Descrição'] = sample_display['review_description']
+                sample_display['Descrição'] = sample_display['review_description'].apply(lambda v: _make_desc_cell(v, limit=100))
             elif 'resultado' in sample_display.columns:
                 # fall back to existing resultado column if no review_description
-                sample_display['Descrição'] = sample_display['resultado']
+                sample_display['Descrição'] = sample_display['resultado'].apply(lambda v: _make_desc_cell(v, limit=100))
             # ensure 'Descrição' is the last column
             if 'Descrição' in sample_display.columns:
                 view_cols.append('Descrição')
