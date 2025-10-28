@@ -880,7 +880,18 @@ def main():
             reviews_map = get_reviews_map()
             sample_display['Revisado'] = sample_display['order_id'].apply(lambda oid: '✅' if bool(reviews_map.get(str(oid), {}).get('reviewed', 0)) else '')
             sample_display['Revisado_por'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_by'))
+            # assign raw value (may be ISO string or None)
             sample_display['Revisado_em'] = sample_display['order_id'].apply(lambda oid: reviews_map.get(str(oid), {}).get('reviewed_at'))
+            # Normalize the Revisado_em column with the centralized converter
+            # using a small temporary DF so conversion logic is consistent and
+            # doesn't depend on broader table dtypes. After conversion, ensure
+            # we have a non-null string for rendering.
+            try:
+                tmp = pd.DataFrame({'Revisado_em': sample_display['Revisado_em']})
+                tmp = _convert_ts_for_display(tmp, ts_cols='Revisado_em')
+                sample_display['Revisado_em'] = tmp['Revisado_em'].fillna('').astype(str)
+            except Exception:
+                sample_display['Revisado_em'] = sample_display['Revisado_em'].apply(lambda v: str(v) if pd.notna(v) else '')
             # normalize review timestamp to the same display format as data_venda
             try:
                 # Use the centralized converter to handle aware/naive mixes and
@@ -944,6 +955,14 @@ def main():
             sample_display = sample_display[view_cols].copy()
             # add a 1-based index column for easier reference in the UI
             sample_display.insert(0, '#', range(1, 1 + len(sample_display)))
+
+            # If debug enabled, show the row that will be rendered so we can
+            # confirm server-side values before HTML generation.
+            try:
+                if os.environ.get('SHOW_REVIEW_DEBUG', '') == '1':
+                    st.write('DEBUG sample_display row for first 10 entries:', sample_display.head(10))
+            except Exception:
+                pass
 
             # format numeric columns for display
             if 'preco_unitario' in sample_display.columns:
