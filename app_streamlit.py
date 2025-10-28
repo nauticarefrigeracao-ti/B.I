@@ -39,11 +39,12 @@ def render_interactive_table(df, table_id='tbl'):
         oid_col = next(col for col in df2.columns if col.lower() == 'order id')
         for i, oid in enumerate(df2[oid_col].fillna('').astype(str), start=1):
             btn = f'<button class="copy-btn" data-order="{html.escape(oid)}" title="Copiar Order ID">📋</button>'
-            # Open the Mercado Libre detail page in a new tab to avoid navigating
-            # inside the Streamlit iframe (which caused the page to appear inside
-            # the table area). Use noopener to be safe.
-            link = f'<a href="https://www.mercadolivre.com.br/vendas/{html.escape(oid)}/detalhe" target="_blank" rel="noopener noreferrer" title="Abrir detalhe">{i}</a>'
-            html_idx.append(btn + ' ' + link)
+            # Keep the index number for identification/organization, but do
+            # NOT make it a link (the Order ID column already links to the
+            # Mercado Livre detail). Render as plain text to avoid redundancy
+            # and any iframe navigation side-effects.
+            idx_html = f'<span class="row-index" title="Linha {i}">{i}</span>'
+            html_idx.append(btn + ' ' + idx_html)
         df2['#'] = html_idx
 
     # Make the Order ID itself a clickable link to Mercado Livre detail page so the full ID is visible and can be opened
