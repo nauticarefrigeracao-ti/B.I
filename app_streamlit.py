@@ -949,13 +949,9 @@ def main():
             # add a 1-based index column for easier reference in the UI
             sample_display.insert(0, '#', range(1, 1 + len(sample_display)))
 
-            # If debug enabled, show the row that will be rendered so we can
-            # confirm server-side values before HTML generation.
-            try:
-                if os.environ.get('SHOW_REVIEW_DEBUG', '') == '1':
-                    st.write('DEBUG sample_display row for first 10 entries:', sample_display.head(10))
-            except Exception:
-                pass
+            # (debug output removed) — avoid showing internal debug table above
+            # the main sample table in production. Use SHOW_REVIEW_DEBUG only
+            # in specific troubleshooting builds if needed.
 
             # format numeric columns for display
             if 'preco_unitario' in sample_display.columns:
