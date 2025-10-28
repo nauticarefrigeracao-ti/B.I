@@ -1327,15 +1327,44 @@ def _convert_ts_for_display(df: pd.DataFrame, ts_cols):
                 # can raise. In that case, avoid relying on tz-aware ops and
                 # perform a best-effort manual shift: parse as naive datetimes
                 # (interpreting them as UTC) and subtract 3 hours.
-                try:
-                    # Try a safe manual path that does not require tzdata: parse
-                    # the original strings as naive datetimes and shift -3h.
-                    naive = pd.to_datetime(s, errors='coerce')
-                    shifted = naive - pd.Timedelta(hours=3)
-                    df[c] = shifted.dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
-                except Exception:
-                    # Last resort: format whatever could be parsed as naive
-                    df[c] = pd.to_datetime(df[c], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+                    try:
+                        # Manual, tzdata-free fallback using dateutil.parser which
+                        # handles both aware (with offset) and naive strings. This
+                        # avoids relying on pandas tz_convert which can fail in
+                        # minimal runtimes without tzdb. We interpret naive
+                        # timestamps according to `naive_mode` (UTC or LOCAL).
+                        from dateutil import parser as _parser
+                        from datetime import timedelta
+
+                        def _fmt_manual(x):
+                            try:
+                                if x is None:
+                                    return ''
+                                s_val = str(x)
+                                if not s_val or s_val.lower() in ('nan', 'none'):
+                                    return ''
+                                dt = _parser.parse(s_val)
+                                # If parsed value has no tzinfo, interpret per naive_mode
+                                if getattr(dt, 'tzinfo', None) is None:
+                                    if naive_mode == 'UTC':
+                                        # treat naive as UTC, convert to Sao_Paulo by -3h
+                                        dt_utc = dt.replace(tzinfo=timezone.utc)
+                                        dt_sp = dt_utc - timedelta(hours=3)
+                                    else:
+                                        # treat naive as already local (America/Sao_Paulo)
+                                        dt_sp = dt
+                                else:
+                                    # aware datetime: normalize to UTC then shift -3h
+                                    dt_utc = dt.astimezone(timezone.utc)
+                                    dt_sp = dt_utc - timedelta(hours=3)
+                                return dt_sp.strftime('%Y-%m-%d %H:%M:%S')
+                            except Exception:
+                                return ''
+
+                        df[c] = s.map(_fmt_manual)
+                    except Exception:
+                        # Last resort: format whatever could be parsed as naive
+                        df[c] = pd.to_datetime(df[c], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
         except Exception:
             # Last resort: fallback to naive parse and string formatting
             try:
