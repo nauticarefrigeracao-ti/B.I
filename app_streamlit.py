@@ -1034,6 +1034,14 @@ def main():
                 else:
                     set_review(order_id_in, reviewed_in, user_in, review_description_in)
                     st.success(('Marcado como Revisado' if reviewed_in else 'Desmarcado revisão') + ' para order_id=' + order_id_in)
+                    # Force a rerun so that the sample table and other cached
+                    # UI pieces that depend on the reviews map reflect the
+                    # newly-saved review immediately in the same session.
+                    try:
+                        st.experimental_rerun()
+                    except Exception:
+                        # If rerun isn't available (older Streamlit), ignore.
+                        pass
 
         st.markdown('---')
         st.subheader('Detalhes do pedido')
@@ -1114,6 +1122,15 @@ def main():
                 review_raw = _convert_ts_for_display(review_raw, ts_cols='reviewed_at')
                 st.write('Row raw em `reviews` (colunas: order_id, reviewed, reviewed_by, reviewed_at, review_description)')
                 st.dataframe(review_raw)
+                # Optional debug: show what the in-memory reviews map contains
+                # for this order id. Enable by setting environment variable
+                # SHOW_REVIEW_DEBUG=1 in the deployment (safe, opt-in).
+                try:
+                    if os.environ.get('SHOW_REVIEW_DEBUG', '') == '1':
+                        rm = get_reviews_map()
+                        st.write('DEBUG reviews_map entry for this order_id:', rm.get(str(detail_id)))
+                except Exception:
+                    pass
             else:
                 st.info('Nenhuma linha encontrada em `reviews` para este Order ID.')
 
